@@ -50,7 +50,7 @@ export default async function RestaurantsPage(props: Params) {
       {/* PRODUCT GRID (from StoreTemplate) */}
        
     <StoreTemplate
-      sortBy={sortBy}
+    //  sortBy={sortBy}
       page={page}
       countryCode={params.countryCode}
     />
