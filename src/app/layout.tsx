@@ -6,7 +6,10 @@ import Footer from "@modules/layout/templates/footer"
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
+  title: "JB's Supply",
+  description: "Your trusted supplier.",
 }
+
 
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
