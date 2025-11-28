@@ -3,5 +3,5 @@
 //}
 
 export const getBaseURL = () => {
-  return "https://jbssupply.medusajs.app"
+  return process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL!
 }
