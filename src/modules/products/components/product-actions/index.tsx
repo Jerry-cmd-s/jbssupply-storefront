@@ -11,7 +11,8 @@ import { useParams } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
 import MobileActions from "./mobile-actions"
-
+import { useRouter } from "next/router"
+//import { useParams, useRouter } from "next/navigation"
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
@@ -34,7 +35,7 @@ export default function ProductActions({
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [isAdding, setIsAdding] = useState(false)
   const countryCode = useParams().countryCode as string
-
+  const router = useRouter()
   // If there is only 1 variant, preselect the options
   useEffect(() => {
     if (product.variants?.length === 1) {
@@ -99,19 +100,30 @@ export default function ProductActions({
   const inView = useIntersection(actionsRef, "0px")
 
   // add the selected variant to the cart
+  //const router = useRouter()   // ← ADD THIS LINE
+
+  // add the selected variant to the cart
   const handleAddToCart = async () => {
-    if (!selectedVariant?.id) return null
+    if (!selectedVariant?.id) return
 
     setIsAdding(true)
+    try {
+      await addToCart({
+        variantId: selectedVariant.id,
+        quantity: 1,
+        countryCode,
+      })
 
-    await addToCart({
-      variantId: selectedVariant.id,
-      quantity: 1,
-      countryCode,
-    })
-
-    setIsAdding(false)
+      // THIS IS THE ONLY LINE THAT WAS MISSING
+      // It forces Next.js to re-run server components and read the new cart cookie
+      router.refresh()
+    } catch (error) {
+      console.error("Add to cart failed:", error)
+    } finally {
+      setIsAdding(false)
+    }
   }
+
 
   return (
     <>
