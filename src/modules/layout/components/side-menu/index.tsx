@@ -1,7 +1,7 @@
 "use client"
 
 import { Popover, PopoverPanel, Transition } from "@headlessui/react"
-import { ArrowRightMini, XMark } from "@medusajs/icons"
+import { Bars3, ArrowRightMini, XMark } from "@medusajs/icons"
 import { Text, clx, useToggleState } from "@medusajs/ui"
 import { Fragment } from "react"
 
@@ -9,15 +9,26 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import CountrySelect from "../country-select"
 import { HttpTypes } from "@medusajs/types"
 
-const SideMenuItems = {
-  Home: "/",
-  Store: "/store",
-  Account: "/account",
-  Cart: "/cart",
-}
-
 const SideMenu = ({ regions }: { regions: HttpTypes.StoreRegion[] | null }) => {
   const toggleState = useToggleState()
+
+  const menuItems = [
+    { name: "Home", href: "/" },
+    {
+      name: "Products",
+      children: [
+        {
+          name: "Products for Restaurants",
+          href: "/categories/restaurant-supplies",
+        },
+        { name: "Spas", href: "/business/spas" },
+        { name: "Bars", href: "/business/bars" },
+        { name: "Cleaning", href: "/business/cleaning" },
+      ],
+    },
+    { name: "Account", href: "/account" },
+    { name: "Cart", href: "/cart" },
+  ]
 
   return (
     <div className="h-full">
@@ -30,7 +41,7 @@ const SideMenu = ({ regions }: { regions: HttpTypes.StoreRegion[] | null }) => {
                   data-testid="nav-menu-button"
                   className="relative h-full flex items-center transition-all ease-out duration-200 focus:outline-none hover:text-ui-fg-base"
                 >
-                  Menu
+                  <Bars3 className="w-6 h-6" />
                 </Popover.Button>
               </div>
 
@@ -54,22 +65,43 @@ const SideMenu = ({ regions }: { regions: HttpTypes.StoreRegion[] | null }) => {
                         <XMark />
                       </button>
                     </div>
-                    <ul className="flex flex-col gap-6 items-start justify-start">
-                      {Object.entries(SideMenuItems).map(([name, href]) => {
-                        return (
-                          <li key={name}>
+
+                    <ul className="flex flex-col gap-6 items-start justify-start w-full">
+                      {menuItems.map((item) => (
+                        <li key={item.name} className="w-full">
+                          {"children" in item ? (
+                            <>
+                              <span className="text-3xl leading-10">
+                                {item.name}
+                              </span>
+
+                              <ul className="ml-4 mt-3 flex flex-col gap-3">
+                                {item.children.map((child) => (
+                                  <li key={child.name}>
+                                    <LocalizedClientLink
+                                      href={child.href}
+                                      className="text-lg hover:text-ui-fg-disabled"
+                                      onClick={close}
+                                    >
+                                      {child.name}
+                                    </LocalizedClientLink>
+                                  </li>
+                                ))}
+                              </ul>
+                            </>
+                          ) : (
                             <LocalizedClientLink
-                              href={href}
+                              href={item.href}
                               className="text-3xl leading-10 hover:text-ui-fg-disabled"
                               onClick={close}
-                              data-testid={`${name.toLowerCase()}-link`}
                             >
-                              {name}
+                              {item.name}
                             </LocalizedClientLink>
-                          </li>
-                        )
-                      })}
+                          )}
+                        </li>
+                      ))}
                     </ul>
+
                     <div className="flex flex-col gap-y-6">
                       <div
                         className="flex justify-between"
@@ -89,9 +121,9 @@ const SideMenu = ({ regions }: { regions: HttpTypes.StoreRegion[] | null }) => {
                           )}
                         />
                       </div>
+
                       <Text className="flex justify-between txt-compact-small">
-                        © {new Date().getFullYear()} Medusa Store. All rights
-                        reserved.
+                        © {new Date().getFullYear()} Medusa Store. All rights reserved.
                       </Text>
                     </div>
                   </div>
