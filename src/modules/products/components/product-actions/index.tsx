@@ -116,7 +116,7 @@ export default function ProductActions({
 
       // THIS IS THE ONLY LINE THAT WAS MISSING
       // It forces Next.js to re-run server components and read the new cart cookie
-      router.refresh()
+      router.reload()
     } catch (error) {
       console.error("Add to cart failed:", error)
     } finally {
