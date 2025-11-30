@@ -1,130 +1,133 @@
-"use client";
+"use client"
 
-import { Button, Heading } from "@medusajs/ui";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { Button, Heading } from "@medusajs/ui"
+import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect } from "react"
 
-// Animation variants
+// Animation variants for the single word
 const wordVariants = {
   enter: { opacity: 0, y: 20 },
   center: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -20 },
-};
+}
 
+// Animation variants for secondary text
 const secondaryTextVariants = {
   enter: { opacity: 0, y: 10 },
   center: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -10 },
-};
+}
 
 const buttonVariants = {
   hidden: { opacity: 0, scale: 0.95 },
   visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: "easeOut" } },
   hover: { scale: 1.05, transition: { duration: 0.2 } },
-};
+}
 
+
+
+/////////////////
 const Hero = () => {
-  const [wordIndex, setWordIndex] = useState(0);
-  const [showNextDay, setShowNextDay] = useState(false);
-  const words = ["Restaurants", "Salon & Spas", "Cafes", "Bars"];
+  // State for cycling through multiple words
+  const [wordIndex, setWordIndex] = useState(0)
+  // State for toggling secondary text
+  const [showNextDay, setShowNextDay] = useState(false)
 
+  // List of words to cycle through
+  const words = ["Restaurants", "Salon & Spas", "Cafes", "Bars"]
+
+  // Effect to cycle words and toggle secondary text every 3 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      setWordIndex((prev) => (prev + 1) % words.length);
-      setShowNextDay((prev) => !prev);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+      setWordIndex((prev) => (prev + 1) % words.length)
+      setShowNextDay((prev) => !prev)
+    }, 3000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
-    <section className="relative min-h-screen w-full bg-gradient-to-br from-black via-black-900 to-red-700 overflow-hidden">
-      {/* Optional subtle overlay for better text readability */}
-      <div className="absolute inset-0 bg-black/30" />
+    <div className="relative h-[75vh] w-full border-b border-ui-border-base bg-gradient-to-br from-black-900 to-red-600">
+      <div className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center gap-6 px-4 sm:px-6 md:px-8">
+        <div>
+          <Heading
+            level="h1"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight text-black-900"
+          >
+            Supplying{" "}
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={words[wordIndex]}
+                variants={wordVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.5 }}
+                className="text-red-600"
+              >
+                {words[wordIndex]}
+              </motion.span>
+            </AnimatePresence>{" "}
+            with Total Solutions
+          </Heading>
+        </div>
 
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 sm:px-8 md:px-12 text-center gap-8 sm:gap-10">
-        {/* Main Heading */}
-        <Heading
-          level="h1"
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-white"
-        >
-          Supplying{" "}
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={words[wordIndex]}
-              variants={wordVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="text-red-500 inline-block"
-            >
-              {words[wordIndex]}
-            </motion.span>
-          </AnimatePresence>{" "}
-          with Total Solutions
-        </Heading>
-
-        {/* Subheading */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
           <Heading
             level="h2"
-            className="text-lg sm:text-xl md:text-2xl font-light text-gray-100 max-w-3xl mx-auto leading-relaxed"
+            className="text-base sm:text-lg md:text-xl text-black-900 font-light max-w-xl md:max-w-2xl mx-auto"
           >
-            From eco-friendly utensils to complete restaurant starter kits, JB’s Supply delivers{" "}
-            <span className="font-bold text-red-400">reliability</span> and{" "}
-            <span className="font-bold text-red-400">value</span>.
+            From eco-friendly utensils to complete restaurant starter kits, JB’s
+            Supply delivers <span className="font-semibold">reliability</span> and{" "}
+            <span className="font-semibold">value</span>.
           </Heading>
         </motion.div>
 
-        {/* Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 mt-6">
+        <div className="flex flex-wrap gap-4 mt-4">
           <motion.div variants={buttonVariants} initial="hidden" animate="visible" whileHover="hover">
             <Button
               variant="primary"
               size="large"
-              className="rounded-full px-8 py-4 text-lg font-medium bg-red-600 hover:bg-red-700 text-white shadow-xl transition-all"
+              className="rounded-2xl shadow-lg px-6 py-3 bg-red-700 text-white focus:ring-2 focus:ring-black-500"
             >
               Shop Bundles
             </Button>
           </motion.div>
-
           <motion.div variants={buttonVariants} initial="hidden" animate="visible" whileHover="hover">
             <Button
               variant="secondary"
               size="large"
-              className="rounded-full px-8 py-4 text-lg font-medium border-2 border-white/80 text-white backdrop-blur-sm hover:bg-white/10 transition-all"
+              className="rounded-2xl px-6 py-3 border-black-900 text-black-900 focus:ring-2 focus:ring-black-500 transition-colors"
             >
               Build Bundle
             </Button>
           </motion.div>
         </div>
 
-        {/* Delivery Text */}
         <AnimatePresence mode="wait">
           <motion.p
             key={showNextDay ? "next-day" : "same-day"}
+            className="text-sm sm:text-md md:text-lg text-black-900 font-medium mt-6"
             variants={secondaryTextVariants}
             initial="enter"
             animate="center"
             exit="exit"
             transition={{ duration: 0.5 }}
-            className="text-base sm:text-lg md:text-xl text-gray-200 font-medium"
           >
             We offer{" "}
-            <span className="font-bold text-red-400">
+            <span className="font-semibold">
               {showNextDay ? "next-day delivery" : "same-day delivery"}
             </span>
-            . Schedule your supplies today.
+            . Schedule your supplies with us today.
           </motion.p>
         </AnimatePresence>
       </div>
-    </section>
-  );
-};
+    </div>
+  )
+}
 const MainContent = () => {
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
