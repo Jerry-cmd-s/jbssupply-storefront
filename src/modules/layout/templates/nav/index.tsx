@@ -13,7 +13,7 @@ export default async function Nav() {
     <div className="sticky top-0 inset-x-0 z-50 backdrop-blur-md bg-white/80 border-b border-ui-border-base">
       <header className="relative w-full h-16">
         {/* This is the magic wrapper — full width, no overflow */}
-        <nav className="flex h-full items-center justify-between w-full px-4 sm:px-6 lg:px-8 max-w-screen-2xl mx-auto">
+        <nav className="content-container-safe flex h-full items-center justify-between w-full">
           {/* Left: Menu + Logo */}
           <div className="flex items-center gap-4 h-full">
             <div className="block md:hidden">
