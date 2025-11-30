@@ -49,7 +49,7 @@ const Hero = () => {
         <div>
           <Heading
             level="h1"
-            className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight text-black-900"
+            className="text-2xl sm:text-4xl md:text-5xl lg:text-4xl leading-tight text-black-900"
           >
             Supplying{" "}
             <AnimatePresence mode="wait">
