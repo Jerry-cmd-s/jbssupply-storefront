@@ -8,17 +8,17 @@ import Image from "next/image"
 
 export default async function Nav() {
   const regions = await listRegions().then((regions: StoreRegion[]) => regions)
+
   return (
-    <div className="sticky top-0 inset-x-0 z-50 backdrop-blur-md bg-white/80 border-b border-ui-border-base shadow-sm">
-      <header className="h-16">
-        <nav className="content-container flex items-center justify-between h-full">
+    <div className="sticky top-0 inset-x-0 z-50 backdrop-blur-md bg-white/80 border-b border-ui-border-base">
+      <header className="relative w-full h-16">
+        {/* This is the magic wrapper — full width, no overflow */}
+        <nav className="flex h-full items-center justify-between w-full px-4 sm:px-6 lg:px-8 max-w-screen-2xl mx-auto">
           {/* Left: Menu + Logo */}
           <div className="flex items-center gap-4 h-full">
-            {/* Only show menu on mobile */}
             <div className="block md:hidden">
               <SideMenu regions={regions} />
             </div>
-            {/* Logo */}
             <LocalizedClientLink href="/" data-testid="nav-store-link">
               <Image
                 src="/jbssupply.png"
@@ -26,64 +26,59 @@ export default async function Nav() {
                 width={85}
                 height={61}
                 className="object-contain"
+                priority
               />
             </LocalizedClientLink>
           </div>
+
           {/* Right: Links + Cart */}
           <div className="flex items-center gap-x-6 h-full">
-            {/* Business Type Dropdown */}
-            <div className="relative group flex items-center">
-              <button
-                className="hidden small:inline-block text-sm font-medium text-ui-fg-subtle hover:text-ui-fg-base transition-colors px-2 py-1"
-                data-testid="nav-business-type-button"
-              >
+            <div className="relative group">
+              <button className="hidden small:inline-block text-sm font-medium text-ui-fg-subtle hover:text-ui-fg-base transition-colors px-2 py-1">
                 Products
               </button>
-              {/* Wider Dropdown Menu with Persistent Hover, Positioned Underneath */}
-              <div className="absolute invisible group-hover:visible bg-white border border-ui-border-base shadow-lg rounded-md top-full left-0 z-10 min-w-[200px] transition-all duration-200 ease-out opacity-0 group-hover:opacity-100 group-hover:delay-100">
-                <LocalizedClientLink
-                  href="/categories/restaurant-supplies"
-                  className="block px-4 py-2 text-sm text-ui-fg-subtle hover:bg-ui-bg-subtle hover:text-ui-fg-base transition-colors"
-                  data-testid="nav-restaurants-link"
-                >
-                 Products for Restaurants
-                </LocalizedClientLink>
-                <LocalizedClientLink
-                  href="/business/spas"
-                  className="block px-4 py-2 text-sm text-ui-fg-subtle hover:bg-ui-bg-subtle hover:text-ui-fg-base transition-colors"
-                  data-testid="nav-spas-link"
-                >
-                  Spas
-                </LocalizedClientLink>
-                <LocalizedClientLink
-                  href="/business/bars"
-                  className="block px-4 py-2 text-sm text-ui-fg-subtle hover:bg-ui-bg-subtle hover:text-ui-fg-base transition-colors"
-                  data-testid="nav-bars-link"
-                >
-                  Bars
-                </LocalizedClientLink>
-                <LocalizedClientLink
-                  href="/business/cleaning"
-                  className="block px-4 py-2 text-sm text-ui-fg-subtle hover:bg-ui-bg-subtle hover:text-ui-fg-base transition-colors"
-                  data-testid="nav-cleaning-link"
-                >
-                  Cleaning
-                </LocalizedClientLink>
+              <div className="absolute top-full left-0 pt-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 z-10">
+                <div className="bg-white border border-ui-border-base shadow-lg rounded-md min-w-[200px] overflow-hidden">
+                  <LocalizedClientLink
+                    href="/categories/restaurant-supplies"
+                    className="block px-4 py-3 text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    Products for Restaurants
+                  </LocalizedClientLink>
+                  <LocalizedClientLink
+                    href="/business/spas"
+                    className="block px-4 py-3 text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    Spas
+                  </LocalizedClientLink>
+                  <LocalizedClientLink
+                    href="/business/bars"
+                    className="block px-4 py-3 text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    Bars
+                  </LocalizedClientLink>
+                  <LocalizedClientLink
+                    href="/business/cleaning"
+                    className="block px-4 py-3 text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    Cleaning
+                  </LocalizedClientLink>
+                </div>
               </div>
             </div>
+
             <LocalizedClientLink
-              className="hidden small:inline-block text-sm font-medium text-ui-fg-subtle hover:text-ui-fg-base transition-colors flex items-center px-2 py-1"
+              className="hidden small:inline-block text-sm font-medium text-ui-fg-subtle hover:text-ui-fg-base transition-colors px-2 py-1"
               href="/account"
-              data-testid="nav-account-link"
             >
               Account
             </LocalizedClientLink>
+
             <Suspense
               fallback={
                 <LocalizedClientLink
                   className="hover:text-ui-fg-base flex items-center gap-2 text-sm font-medium transition-colors px-2 py-1"
                   href="/cart"
-                  data-testid="nav-cart-link"
                 >
                   Cart (0)
                 </LocalizedClientLink>
