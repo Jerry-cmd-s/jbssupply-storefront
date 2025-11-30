@@ -26,6 +26,7 @@ const AccountNav = ({
 
   return (
     <div>
+      {/* MOBILE NAV */}
       <div className="small:hidden" data-testid="mobile-account-nav">
         {route !== `/${countryCode}/account` ? (
           <LocalizedClientLink
@@ -43,8 +44,10 @@ const AccountNav = ({
             <div className="text-xl-semi mb-4 px-8">
               Hello {customer?.first_name}
             </div>
+
             <div className="text-base-regular">
               <ul>
+                {/* PROFILE */}
                 <li>
                   <LocalizedClientLink
                     href="/account/profile"
@@ -60,6 +63,8 @@ const AccountNav = ({
                     </>
                   </LocalizedClientLink>
                 </li>
+
+                {/* ADDRESSES */}
                 <li>
                   <LocalizedClientLink
                     href="/account/addresses"
@@ -76,47 +81,42 @@ const AccountNav = ({
                   </LocalizedClientLink>
                 </li>
 
-
-<li>
+                {/* NEW: BUILD BUNDLE SUBSCRIPTION */}
+                <li>
                   <LocalizedClientLink
-                    href="/account/orders"
+                    href="/account/subscriptions"
                     className="flex items-center justify-between py-4 border-b border-gray-200 px-8"
-                    data-testid="orders-link"
+                    data-testid="subscriptions-link"
                   >
-                    <div className="flex items-center gap-x-2">
-                      <Package size={20} />
-                      <span>Bundle Subscription</span>
-                    </div>
-                    <ChevronDown className="transform -rotate-90" />
+                    <>
+                      <div className="flex items-center gap-x-2">
+                        <Package size={20} />
+                        <span>Bundle Subscription</span>
+                      </div>
+                      <ChevronDown className="transform -rotate-90" />
+                    </>
                   </LocalizedClientLink>
                 </li>
 
-
-
-
-
-
-
-
-
-                
+                {/* ORDERS */}
                 <li>
                   <LocalizedClientLink
                     href="/account/orders"
                     className="flex items-center justify-between py-4 border-b border-gray-200 px-8"
                     data-testid="orders-link"
                   >
-                    <div className="flex items-center gap-x-2">
-                      <Package size={20} />
-                      <span>Orders</span>
-                    </div>
-                    <ChevronDown className="transform -rotate-90" />
+                    <>
+                      <div className="flex items-center gap-x-2">
+                        <Package size={20} />
+                        <span>Orders</span>
+                      </div>
+                      <ChevronDown className="transform -rotate-90" />
+                    </>
                   </LocalizedClientLink>
                 </li>
-                
-                <li>
-                  
 
+                {/* LOG OUT */}
+                <li>
                   <button
                     type="button"
                     className="flex items-center justify-between py-4 border-b border-gray-200 px-8 w-full"
@@ -135,11 +135,14 @@ const AccountNav = ({
           </>
         )}
       </div>
+
+      {/* DESKTOP NAV */}
       <div className="hidden small:block" data-testid="account-nav">
         <div>
           <div className="pb-4">
             <h3 className="text-base-semi">Account</h3>
           </div>
+
           <div className="text-base-regular">
             <ul className="flex mb-0 justify-start items-start flex-col gap-y-4">
               <li>
@@ -151,6 +154,7 @@ const AccountNav = ({
                   Overview
                 </AccountNavLink>
               </li>
+
               <li>
                 <AccountNavLink
                   href="/account/profile"
@@ -160,6 +164,7 @@ const AccountNav = ({
                   Profile
                 </AccountNavLink>
               </li>
+
               <li>
                 <AccountNavLink
                   href="/account/addresses"
@@ -169,6 +174,18 @@ const AccountNav = ({
                   Addresses
                 </AccountNavLink>
               </li>
+
+              {/* NEW: BUILD BUNDLE SUBSCRIPTION */}
+              <li>
+                <AccountNavLink
+                  href="/account/subscriptions"
+                  route={route!}
+                  data-testid="subscriptions-link"
+                >
+                  Bundle Subscription
+                </AccountNavLink>
+              </li>
+
               <li>
                 <AccountNavLink
                   href="/account/orders"
@@ -178,6 +195,7 @@ const AccountNav = ({
                   Orders
                 </AccountNavLink>
               </li>
+
               <li className="text-grey-700">
                 <button
                   type="button"
@@ -211,6 +229,7 @@ const AccountNavLink = ({
   const { countryCode }: { countryCode: string } = useParams()
 
   const active = route.split(countryCode)[1] === href
+
   return (
     <LocalizedClientLink
       href={href}
