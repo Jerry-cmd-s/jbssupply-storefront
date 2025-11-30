@@ -33,7 +33,7 @@ const Hero = () => {
 
         {/* Main heading */}
         <div className="max-w-5xl -mt-12 md:-mt-16">
-          <Heading level="h1" className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-tight font-bold text-black-900">
+          <Heading level="h1" className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-tight text-black-900">
             Supplying{" "}
             <AnimatePresence mode="wait">
               <motion.span
@@ -63,7 +63,7 @@ const Hero = () => {
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
           <motion.div variants={buttonVariants} initial="hidden" animate="visible" whileHover="hover">
-            <Button variant="primary" size="large" className="rounded-2xl shadow-lg px-10 py-5 bg-red-700 text-white text-lg font-medium">
+            <Button variant="primary" size="large" className="rounded-2xl shadow-lg px-10 py-5 bg-black-700 text-white text-lg font-medium">
               Shop Bundles
             </Button>
           </motion.div>
