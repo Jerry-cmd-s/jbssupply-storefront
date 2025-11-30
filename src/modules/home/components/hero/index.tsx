@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
 import { ShieldCheck, Zap, PackageCheck } from "lucide-react"
 
+// animations
 const wordVariants = { enter: { opacity: 0, y: 20 }, center: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -20 } }
 const secondaryTextVariants = { enter: { opacity: 0, y: 10 }, center: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -10 } }
 const buttonVariants = {
@@ -29,12 +30,10 @@ const Hero = () => {
   return (
     <div className="relative h-screen md:h-[80vh] w-full overflow-hidden border-b border-ui-border-base bg-gradient-to-br from-black-900 to-red-600">
       <div className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center px-6 sm:px-8 md:px-12">
-        {/* Main heading – moved up */}
+
+        {/* Main heading */}
         <div className="max-w-5xl -mt-12 md:-mt-16">
-          <Heading
-            level="h1"
-            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-tight font-bold text-black-900"
-          >
+          <Heading level="h1" className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-tight font-bold text-black-900">
             Supplying{" "}
             <AnimatePresence mode="wait">
               <motion.span
@@ -44,7 +43,7 @@ const Hero = () => {
                 animate="center"
                 exit="exit"
                 transition={{ duration: 0.5 }}
-                className="text-green-600 inline-block"
+                className="text-blue-600 inline-block"
               >
                 {words[wordIndex]}
               </motion.span>
@@ -54,25 +53,21 @@ const Hero = () => {
         </div>
 
         {/* Subheading */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="mt-6 max-w-3xl"
-        >
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }} className="mt-6 max-w-3xl">
           <Heading level="h2" className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-black-900 font-light leading-relaxed">
             From eco-friendly utensils to complete restaurant starter kits, JB’s Supply delivers{" "}
             <span className="font-semibold">reliability</span> and <span className="font-semibold">value</span>.
           </Heading>
         </motion.div>
 
-        {/* Buttons – closer together */}
+        {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
           <motion.div variants={buttonVariants} initial="hidden" animate="visible" whileHover="hover">
             <Button variant="primary" size="large" className="rounded-2xl shadow-lg px-10 py-5 bg-red-700 text-white text-lg font-medium">
               Shop Bundles
             </Button>
           </motion.div>
+
           <motion.div variants={buttonVariants} initial="hidden" animate="visible" whileHover="hover">
             <Button variant="secondary" size="large" className="rounded-2xl px-10 py-5 border-2 border-black-900 text-black-900 text-lg font-medium">
               Build Bundle
@@ -80,7 +75,7 @@ const Hero = () => {
           </motion.div>
         </div>
 
-        {/* Delivery text – tighter spacing */}
+        {/* Delivery text */}
         <AnimatePresence mode="wait">
           <motion.p
             key={showNextDay ? "next-day" : "same-day"}
@@ -102,62 +97,50 @@ const Hero = () => {
     </div>
   )
 }
+
 const MainContent = () => {
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, delay: i * 0.2, ease: "easeOut" },
-    }),
-    hover: {
-      scale: 1.03,
-      boxShadow: "0 10px 20px rgba(0,0,0,0.2)",
-      transition: { duration: 0.2 },
-    },
+    visible: (i: number) => ({ opacity: 1, y: 0, transition: { duration: 0.6, delay: i * 0.2 } }),
+    hover: { scale: 1.03, boxShadow: "0 10px 20px rgba(0,0,0,0.2)", transition: { duration: 0.2 } },
   }
+
+  const coreValues = [
+    {
+      title: "Value-Driven",
+      desc: "Affordable bundles and quality supplies designed to maximize your margins.",
+      icon: PackageCheck,
+    },
+    {
+      title: "Efficiency",
+      desc: "Fast delivery, smooth ordering, and reliable stock availability.",
+      icon: Zap,
+    },
+    {
+      title: "Reliability",
+      desc: "You show up on time and your products do what they’re supposed to do.",
+      icon: ShieldCheck,
+    },
+  ]
 
   return (
     <main className="w-full py-16 sm:py-20 bg-gray-100">
-      {/* WHY CHOOSE US */}
+
+      {/* Why Choose Us */}
       <section className="content-container text-center mb-16 sm:mb-20">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <Heading
-            level="h2"
-            className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-black-900"
-          >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+          <Heading level="h2" className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-black-900">
             Why Choose JB’s Supply?
           </Heading>
-          <p className="text-gray-700 text-base sm:text-lg leading-relaxed max-w-xl md:max-w-2xl mx-auto">
-            We provide affordable, eco-friendly, and complete supply solutions
-            that help restaurants, cafés, spas, and other small businesses grow
-            with confidence.
+          <p className="text-gray-700 text-base sm:text-lg max-w-xl md:max-w-2xl mx-auto">
+            We provide affordable, eco-friendly, and complete supply solutions that help small businesses grow with confidence.
           </p>
         </motion.div>
       </section>
 
-      {/* FEATURE GRID */}
+      {/* Feature Cards */}
       <section className="content-container grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 mb-16 sm:mb-20">
-        {[
-          {
-            title: "Value-Driven",
-            desc: "Your customers care about speed, stock availability, and streamlined ordering. You make it easy for them — fast delivery, simple bundles, no friction.",
-          },
-          {
-            title: "Efficiency",
-            desc: "Your customers care about speed, stock availability, and streamlined ordering. You make it easy for them — fast delivery, simple bundles, no friction.",
-            icon: Zap,
-          },
-          {
-            title: "Reliability",
-            desc: "You show up on time and your products do what they’re supposed to do. A small business can’t afford surprises, and you remove that stress.",
-            icon: PackageCheck,
-          },
-        ].map((feature, index) => (
+        {coreValues.map((feature, index) => (
           <motion.div
             key={feature.title}
             variants={cardVariants}
@@ -167,40 +150,31 @@ const MainContent = () => {
             custom={index}
             className="p-6 sm:p-8 border border-gray-300 rounded-2xl shadow-sm bg-white hover:bg-red-100/50 transition-colors"
           >
-            <Heading
-              level="h3"
-              className="text-lg sm:text-xl font-semibold mb-2 text-black-900"
-            >
+            <feature.icon className="w-12 h-12 text-red-600 mb-4 mx-auto" />
+
+            <Heading level="h3" className="text-lg sm:text-xl font-semibold mb-2 text-black-900">
               {feature.title}
             </Heading>
+
             <p className="text-gray-700 text-sm sm:text-base">{feature.desc}</p>
           </motion.div>
         ))}
       </section>
 
-      {/* SOCIAL PROOF */}
+      {/* Social proof */}
       <section className="content-container text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <Heading
-            level="h2"
-            className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-black-900"
-          >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+          <Heading level="h2" className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-black-900">
             Trusted by Local Businesses
           </Heading>
           <p className="text-gray-700 text-base sm:text-lg max-w-xl md:max-w-2xl mx-auto">
-            From restaurants and cafés to spas and beyond, JB’s Supply helps
-            small businesses thrive with reliable service and tailored bundles.
+            From restaurants and cafés to spas and beyond, JB’s Supply helps small businesses thrive with reliable service and tailored bundles.
           </p>
         </motion.div>
       </section>
     </main>
   )
 }
-
 
 export default Hero
 export { MainContent }
