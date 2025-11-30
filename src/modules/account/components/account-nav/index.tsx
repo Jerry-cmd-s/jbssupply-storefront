@@ -91,7 +91,7 @@ const AccountNav = ({
                     <>
                       <div className="flex items-center gap-x-2">
                         <Package size={20} />
-                        <span>Bundle Subscription</span>
+                        <span>Build Bundle Subscription</span>
                       </div>
                       <ChevronDown className="transform -rotate-90" />
                     </>
