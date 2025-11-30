@@ -54,7 +54,7 @@ const Hero = () => {
                 animate="center"
                 exit="exit"
                 transition={{ duration: 0.5 }}
-                className="text-red-600 inline-block"
+                className="text-blue-600 inline-block"
               >
                 {words[wordIndex]}
               </motion.span>
