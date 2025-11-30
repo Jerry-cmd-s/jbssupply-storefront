@@ -4,19 +4,8 @@ import { Button, Heading } from "@medusajs/ui"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
 
-// Animation variants
-const wordVariants = {
-  enter: { opacity: 0, y: 20 },
-  center: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
-}
-
-const secondaryTextVariants = {
-  enter: { opacity: 0, y: 10 },
-  center: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -10 },
-}
-
+const wordVariants = { enter: { opacity: 0, y: 20 }, center: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -20 } }
+const secondaryTextVariants = { enter: { opacity: 0, y: 10 }, center: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -10 } }
 const buttonVariants = {
   hidden: { opacity: 0, scale: 0.95 },
   visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: "easeOut" } },
@@ -37,13 +26,13 @@ const Hero = () => {
   }, [])
 
   return (
-    <div className="relative h-screen md:h-[75vh] w-full overflow-hidden border-b border-ui-border-base bg-gradient-to-br from-black-900 to-red-600">
-      {/* This wrapper is the magic — prevents horizontal scroll */}
-      <div className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center gap-6 px-6 sm:px-8 md:px-12 lg:px-16 max-w-full">
-        <div className="w-full max-w-5xl">
+    <div className="relative h-screen md:h-[80vh] w-full overflow-hidden border-b border-ui-border-base bg-gradient-to-br from-black-900 to-red-600">
+      <div className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center px-6 sm:px-8 md:px-12">
+        {/* Main heading – moved up */}
+        <div className="max-w-5xl -mt-12 md:-mt-16">
           <Heading
             level="h1"
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight font-bold text-black-900"
+            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-tight font-bold text-black-900"
           >
             Supplying{" "}
             <AnimatePresence mode="wait">
@@ -54,7 +43,7 @@ const Hero = () => {
                 animate="center"
                 exit="exit"
                 transition={{ duration: 0.5 }}
-                className="text-blue-600 inline-block"
+                className="text-red-600 inline-block"
               >
                 {words[wordIndex]}
               </motion.span>
@@ -63,47 +52,38 @@ const Hero = () => {
           </Heading>
         </div>
 
+        {/* Subheading */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="w-full max-w-3xl"
+          className="mt-6 max-w-3xl"
         >
-          <Heading
-            level="h2"
-            className="text-lg sm:text-xl md:text-2xl text-black-900 font-light leading-relaxed"
-          >
-            From eco-friendly utensils to complete restaurant starter kits, JB’s
-            Supply delivers <span className="font-semibold">reliability</span> and{" "}
-            <span className="font-semibold">value</span>.
+          <Heading level="h2" className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-black-900 font-light leading-relaxed">
+            From eco-friendly utensils to complete restaurant starter kits, JB’s Supply delivers{" "}
+            <span className="font-semibold">reliability</span> and <span className="font-semibold">value</span>.
           </Heading>
         </motion.div>
 
-        <div className="flex flex-col sm:flex-row gap-4 mt-6">
+        {/* Buttons – closer together */}
+        <div className="flex flex-col sm:flex-row gap-4 mt-8">
           <motion.div variants={buttonVariants} initial="hidden" animate="visible" whileHover="hover">
-            <Button
-              variant="primary"
-              size="large"
-              className="rounded-2xl shadow-lg px-8 py-4 bg-red-700 text-white text-lg font-medium"
-            >
+            <Button variant="primary" size="large" className="rounded-2xl shadow-lg px-10 py-5 bg-red-700 text-white text-lg font-medium">
               Shop Bundles
             </Button>
           </motion.div>
           <motion.div variants={buttonVariants} initial="hidden" animate="visible" whileHover="hover">
-            <Button
-              variant="secondary"
-              size="large"
-              className="rounded-2xl px-8 py-4 border-2 border-black-900 text-black-900 text-lg font-medium"
-            >
+            <Button variant="secondary" size="large" className="rounded-2xl px-10 py-5 border-2 border-black-900 text-black-900 text-lg font-medium">
               Build Bundle
             </Button>
           </motion.div>
         </div>
 
+        {/* Delivery text – tighter spacing */}
         <AnimatePresence mode="wait">
           <motion.p
             key={showNextDay ? "next-day" : "same-day"}
-            className="text-lg sm:text-xl text-black-900 font-medium mt-8"
+            className="mt-6 text-lg sm:text-xl lg:text-2xl text-black-900 font-medium"
             variants={secondaryTextVariants}
             initial="enter"
             animate="center"
