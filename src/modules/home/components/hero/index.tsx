@@ -88,7 +88,7 @@ const Hero = () => {
           >
             We offer{" "}
             <span className="font-bold text-red-600">
-              {showNextDay ? "next-day delivery" : "same-day delivery"}
+              {showNextDay ? "next-day delivery" : "Payment Plan"}
             </span>
             . Schedule your supplies with us today.
           </motion.p>
