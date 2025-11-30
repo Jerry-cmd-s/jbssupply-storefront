@@ -4,14 +4,13 @@ import { Button, Heading } from "@medusajs/ui"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
 
-// Animation variants for the single word
+// Animation variants
 const wordVariants = {
   enter: { opacity: 0, y: 20 },
   center: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -20 },
 }
 
-// Animation variants for secondary text
 const secondaryTextVariants = {
   enter: { opacity: 0, y: 10 },
   center: { opacity: 1, y: 0 },
@@ -24,19 +23,11 @@ const buttonVariants = {
   hover: { scale: 1.05, transition: { duration: 0.2 } },
 }
 
-
-
-/////////////////
 const Hero = () => {
-  // State for cycling through multiple words
   const [wordIndex, setWordIndex] = useState(0)
-  // State for toggling secondary text
   const [showNextDay, setShowNextDay] = useState(false)
-
-  // List of words to cycle through
   const words = ["Restaurants", "Salon & Spas", "Cafes", "Bars"]
 
-  // Effect to cycle words and toggle secondary text every 3 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setWordIndex((prev) => (prev + 1) % words.length)
@@ -46,12 +37,13 @@ const Hero = () => {
   }, [])
 
   return (
-    <div className="relative h-[75vh] w-full border-b border-ui-border-base bg-gradient-to-br from-black-900 to-red-600">
-      <div className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center gap-6 px-4 sm:px-6 md:px-8">
-        <div>
+    <div className="relative h-screen md:h-[75vh] w-full overflow-hidden border-b border-ui-border-base bg-gradient-to-br from-black-900 to-red-600">
+      {/* This wrapper is the magic — prevents horizontal scroll */}
+      <div className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center gap-6 px-6 sm:px-8 md:px-12 lg:px-16 max-w-full">
+        <div className="w-full max-w-5xl">
           <Heading
             level="h1"
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight text-black-900"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight font-bold text-black-900"
           >
             Supplying{" "}
             <AnimatePresence mode="wait">
@@ -62,7 +54,7 @@ const Hero = () => {
                 animate="center"
                 exit="exit"
                 transition={{ duration: 0.5 }}
-                className="text-red-600"
+                className="text-red-600 inline-block"
               >
                 {words[wordIndex]}
               </motion.span>
@@ -75,10 +67,11 @@ const Hero = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
+          className="w-full max-w-3xl"
         >
           <Heading
             level="h2"
-            className="text-base sm:text-lg md:text-xl text-black-900 font-light max-w-xl md:max-w-2xl mx-auto"
+            className="text-lg sm:text-xl md:text-2xl text-black-900 font-light leading-relaxed"
           >
             From eco-friendly utensils to complete restaurant starter kits, JB’s
             Supply delivers <span className="font-semibold">reliability</span> and{" "}
@@ -86,12 +79,12 @@ const Hero = () => {
           </Heading>
         </motion.div>
 
-        <div className="flex flex-wrap gap-4 mt-4">
+        <div className="flex flex-col sm:flex-row gap-4 mt-6">
           <motion.div variants={buttonVariants} initial="hidden" animate="visible" whileHover="hover">
             <Button
               variant="primary"
               size="large"
-              className="rounded-2xl shadow-lg px-6 py-3 bg-red-700 text-white focus:ring-2 focus:ring-black-500"
+              className="rounded-2xl shadow-lg px-8 py-4 bg-red-700 text-white text-lg font-medium"
             >
               Shop Bundles
             </Button>
@@ -100,7 +93,7 @@ const Hero = () => {
             <Button
               variant="secondary"
               size="large"
-              className="rounded-2xl px-6 py-3 border-black-900 text-black-900 focus:ring-2 focus:ring-black-500 transition-colors"
+              className="rounded-2xl px-8 py-4 border-2 border-black-900 text-black-900 text-lg font-medium"
             >
               Build Bundle
             </Button>
@@ -110,7 +103,7 @@ const Hero = () => {
         <AnimatePresence mode="wait">
           <motion.p
             key={showNextDay ? "next-day" : "same-day"}
-            className="text-sm sm:text-md md:text-lg text-black-900 font-medium mt-6"
+            className="text-lg sm:text-xl text-black-900 font-medium mt-8"
             variants={secondaryTextVariants}
             initial="enter"
             animate="center"
@@ -118,7 +111,7 @@ const Hero = () => {
             transition={{ duration: 0.5 }}
           >
             We offer{" "}
-            <span className="font-semibold">
+            <span className="font-bold text-red-600">
               {showNextDay ? "next-day delivery" : "same-day delivery"}
             </span>
             . Schedule your supplies with us today.
