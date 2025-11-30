@@ -3,6 +3,7 @@
 import { Button, Heading } from "@medusajs/ui"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
+import { ShieldCheck, Zap, PackageCheck } from "lucide-react"
 
 const wordVariants = { enter: { opacity: 0, y: 20 }, center: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -20 } }
 const secondaryTextVariants = { enter: { opacity: 0, y: 10 }, center: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -10 } }
@@ -143,16 +144,18 @@ const MainContent = () => {
       <section className="content-container grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 mb-16 sm:mb-20">
         {[
           {
-            title: "Starter Kits",
-            desc: "Essential bundles designed to help new businesses launch smoothly.",
+            title: "Value-Driven",
+            desc: "Your customers care about speed, stock availability, and streamlined ordering. You make it easy for them — fast delivery, simple bundles, no friction.",
           },
           {
-            title: "Eco Supplies",
-            desc: "Sustainable, high-quality products that make your customers feel good.",
+            title: "Efficiency",
+            desc: "Your customers care about speed, stock availability, and streamlined ordering. You make it easy for them — fast delivery, simple bundles, no friction.",
+            icon: Zap,
           },
           {
-            title: "Bulk Options",
-            desc: "Stock up and save — reliable supply for your growing operations.",
+            title: "Reliability",
+            desc: "You show up on time and your products do what they’re supposed to do. A small business can’t afford surprises, and you remove that stress.",
+            icon: PackageCheck,
           },
         ].map((feature, index) => (
           <motion.div
