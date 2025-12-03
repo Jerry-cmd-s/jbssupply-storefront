@@ -55,15 +55,15 @@ const Hero = () => {
         {/* Subheading */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }} className="mt-6 max-w-3xl">
           <Heading level="h2" className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-black-900 font-light leading-relaxed">
-            From eco-friendly utensils to complete restaurant starter kits, JB’s Supply delivers{" "}
+            Your Partner in Reliable Supply, Supporting Every Industry You Serve. JB’s Supply delivers{" "}
             <span className="font-semibold">reliability</span> and <span className="font-semibold">value</span>.
           </Heading>
         </motion.div>
 
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
-          <motion.div variants={buttonVariants} initial="hidden" animate="visible" whileHover="hover">
-            <Button variant="primary" size="large" className="rounded-2xl shadow-lg px-10 py-5 bg-red-700 text-white text-lg font-medium">
+          <motion.div variants={buttonVariants} initial="hidden" animate="visible">
+            <Button variant="primary" size="medium" className="rounded-2xl shadow-lg px-10 py-5 bg-blue-700 text-black text-lg font-medium">
               Shop Bundles
             </Button>
           </motion.div>
