@@ -67,6 +67,14 @@ export default async function Nav() {
               </div>
             </div>
 
+
+            <LocalizedClientLink
+              className="hidden small:inline-block text-sm font-medium text-ui-fg-subtle hover:text-ui-fg-base transition-colors px-2 py-1"
+              href="/support"
+            >
+              Support
+            </LocalizedClientLink>
+
             <LocalizedClientLink
               className="hidden small:inline-block text-sm font-medium text-ui-fg-subtle hover:text-ui-fg-base transition-colors px-2 py-1"
               href="/account"
