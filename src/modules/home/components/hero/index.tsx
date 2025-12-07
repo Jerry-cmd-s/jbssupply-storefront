@@ -17,7 +17,7 @@ const buttonVariants = {
 const Hero = () => {
   const [wordIndex, setWordIndex] = useState(0)
   const [showNextDay, setShowNextDay] = useState(false)
-  const words = ["Restaurants", "Salon & Spas", "Cafes", "Bars"]
+  const words = ["Restaurants", "Salon & Spas", "Cafes", "Bars", "Office"]
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -28,7 +28,7 @@ const Hero = () => {
   }, [])
 
   return (
-    <div className="relative h-screen md:h-[80vh] w-full overflow-hidden border-b border-ui-border-base bg-gradient-to-br from-black-900 to-red-600">
+    <div className="relative h-screen md:h-[60vh] w-full overflow-hidden border-b border-ui-border-base bg-gradient-to-br from-black-900 to-red-600">
       <div className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center px-6 sm:px-8 md:px-12">
 
         {/* Main heading */}

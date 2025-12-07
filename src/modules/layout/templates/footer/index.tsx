@@ -98,15 +98,13 @@ export default async function Footer() {
                   Privacy Policy
                 </LocalizedClientLink>
               </li>
-              <li>
-                <a
-                  href="https://docs.medusajs.com"
-                  target="_blank"
-                  rel="noreferrer"
+                  <li>
+                <LocalizedClientLink
+                  href="/support"
                   className="hover:text-gray-900"
                 >
-                  Documentation
-                </a>
+                  Support
+                </LocalizedClientLink>
               </li>
               <li>
                 <a
