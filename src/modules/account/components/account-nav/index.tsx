@@ -182,7 +182,7 @@ const AccountNav = ({
               
               <li>
                 <AccountNavLink
-                  href="/account/subscriptions"
+                  href="/account/bundles"
                   route={route!}
                   data-testid="subscriptions-link"
                 >
