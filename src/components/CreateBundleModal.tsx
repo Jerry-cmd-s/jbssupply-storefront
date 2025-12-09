@@ -1,130 +1,252 @@
 // src/components/CreateBundleModal.tsx
-'use client';
+"use client"
 
-import { useState, useEffect } from 'react';
-import { BundleItem } from "types/bundle";
-import { saveBundle } from 'lib/util/bundleUtils';
-import { X } from 'lucide-react';
+import { useEffect, useState } from "react"
+import { X } from "lucide-react"
+
+import { saveBundle } from "lib/util/bundleUtils"
+import { BundleItem } from "types/bundle"
+
+/* ----------------------------- Types ----------------------------- */
+
+type ProductVariant = {
+  id: string
+  prices?: { amount?: number }[]
+}
 
 type Product = {
-  id: string;
-  title: string;
-  thumbnail?: string;
-  variants: { id: string; prices?: { amount?: number }[] }[];
-};
+  id: string
+  title: string
+  thumbnail?: string
+  variants: ProductVariant[]
+}
 
 type Props = {
-  isOpen: boolean;
-  onClose: () => void;
-  sdk: any;
-};
+  isOpen: boolean
+  onClose: () => void
+  sdk: any
+}
 
-export default function CreateBundleModal({ isOpen, onClose, sdk }: Props) {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [selected, setSelected] = useState<BundleItem[]>([]);
-  const [name, setName] = useState('');
-  const [loading, setLoading] = useState(false);
+/* ----------------------------- Component ----------------------------- */
+
+export default function CreateBundleModal({
+  isOpen,
+  onClose,
+  sdk,
+}: Props) {
+  const [products, setProducts] = useState<Product[]>([])
+  const [selectedItems, setSelectedItems] = useState<BundleItem[]>([])
+  const [bundleName, setBundleName] = useState("")
+  const [isSaving, setIsSaving] = useState(false)
+
+  /* ----------------------------- Load Products ----------------------------- */
 
   useEffect(() => {
-    if (isOpen) {
-      sdk.products.list({ limit: 500 })
-        .then(({ products }) => setProducts(products)));
-    } else {
-      setSelected([]);
-      setName('');
+    if (!isOpen) {
+      setSelectedItems([])
+      setBundleName("")
+      return
     }
-  }, [isOpen, sdk]);
 
-  const toggleItem = (product: Product, variantId: string) => {
-    setSelected(prev => {
-      const exists = prev.find(i => i.variant_id === variantId);
-      if (exists) {
-        return prev.map(i => i.variant_id === variantId ? { ...i, quantity: i.quantity + 1 } : i);
+    let mounted = true
+
+    sdk.products
+      .list({ limit: 500 })
+      .then((res: any) => {
+        if (mounted) setProducts(res.products || [])
+      })
+      .catch(console.error)
+
+    return () => {
+      mounted = false
+    }
+  }, [isOpen, sdk])
+
+  /* ----------------------------- Bundle Logic ----------------------------- */
+
+  const toggleVariant = (product: Product, variantId: string) => {
+    setSelectedItems((prev) => {
+      const existing = prev.find((i) => i.variant_id === variantId)
+
+      if (existing) {
+        return prev.map((i) =>
+          i.variant_id === variantId
+            ? { ...i, quantity: i.quantity + 1 }
+            : i
+        )
       }
-      return [...prev, { product_id: product.id, variant_id: variantId, quantity: 1 }];
-    });
-  };
 
-  const updateQty = (variantId: string, delta: number) => {
-    setSelected(prev => prev
-      .map(i => i.variant_id === variantId ? { ...i, quantity: i.quantity + delta } : i)
-      .filter(i => i.quantity > 0)
-    );
-  };
+      return [
+        ...prev,
+        {
+          product_id: product.id,
+          variant_id: variantId,
+          quantity: 1,
+        },
+      ]
+    })
+  }
+
+  const updateQuantity = (variantId: string, delta: number) => {
+    setSelectedItems((prev) =>
+      prev
+        .map((i) =>
+          i.variant_id === variantId
+            ? { ...i, quantity: i.quantity + delta }
+            : i
+        )
+        .filter((i) => i.quantity > 0)
+    )
+  }
+
+  /* ----------------------------- Save Bundle ----------------------------- */
 
   const handleSave = async () => {
-    if (!name.trim()) return alert('Give your bundle a name');
-    if (selected.length === 0) return alert('Add at least one product');
-    setLoading(true);
-    await saveBundle(sdk, name.trim(), selected);
-    setLoading(false);
-    alert('Bundle saved!');
-    onClose();
-  };
+    if (!bundleName.trim()) {
+      alert("Please enter a bundle name")
+      return
+    }
 
-  if (!isOpen) return null;
+    if (selectedItems.length === 0) {
+      alert("Add at least one product to the bundle")
+      return
+    }
+
+    try {
+      setIsSaving(true)
+      await saveBundle(sdk, bundleName.trim(), selectedItems)
+      alert("Bundle saved successfully")
+      onClose()
+    } catch (err) {
+      console.error(err)
+      alert("Failed to save bundle")
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  /* ----------------------------- Guard ----------------------------- */
+
+  if (!isOpen) return null
+
+  /* ----------------------------- UI ----------------------------- */
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="flex justify-between items-center p-6 border-b">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b p-6">
           <h2 className="text-2xl font-bold">Create Bundle</h2>
-          <button onClick={onClose}><X className="w-7 h-7" /></button>
+          <button onClick={onClose} aria-label="Close">
+            <X className="h-7 w-7" />
+          </button>
         </div>
 
-        <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-          {/* Products grid */}
+        <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
+          {/* Product Picker */}
           <div className="md:w-3/5 overflow-y-auto p-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {products.map(p => {
-                const v = p.variants[0];
-                const added = selected.some(i => i.variant_id === v.id);
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              {products.map((product) => {
+                const variant = product.variants[0]
+                if (!variant) return null
+
+                const isAdded = selectedItems.some(
+                  (i) => i.variant_id === variant.id
+                )
+
                 return (
-                  <div key={p.id} onClick={() => toggleItem(p, v.id)} className={`border-2 rounded-lg p-4 text-center cursor-pointer ${added ? 'border-blue-500 bg-blue-50' : ''}`}>
-                    {p.thumbnail ? <img src={p.thumbnail} alt="" className="w-full h-32 object-cover rounded" /> : <div className="bg-gray-200 h-32 rounded" />}
-                    <p className="mt-2 font-medium text-sm">{p.title}</p>
-                    <button className="mt-2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm">
-                      {added ? 'Added' : '+ Add'}
-                    </button>
-                  </div>
-                );
+                  <button
+                    key={product.id}
+                    onClick={() => toggleVariant(product, variant.id)}
+                    className={`rounded-lg border-2 p-4 text-center transition ${
+                      isAdded
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    {product.thumbnail ? (
+                      <img
+                        src={product.thumbnail}
+                        alt={product.title}
+                        className="h-32 w-full rounded object-cover"
+                      />
+                    ) : (
+                      <div className="h-32 rounded bg-gray-200" />
+                    )}
+
+                    <p className="mt-2 text-sm font-medium">
+                      {product.title}
+                    </p>
+
+                    <div className="mt-2 text-sm font-semibold text-blue-600">
+                      {isAdded ? "Added" : "+ Add"}
+                    </div>
+                  </button>
+                )
               })}
             </div>
           </div>
 
-          {/* Preview */}
-          <div className="md:w-2/5 bg-gray-50 p-6 border-l">
+          {/* Bundle Preview */}
+          <div className="md:w-2/5 border-l bg-gray-50 p-6">
             <input
-              className="w-full border rounded-lg px-4 py-3 text-lg mb-6"
+              value={bundleName}
+              onChange={(e) => setBundleName(e.target.value)}
               placeholder="Bundle name (e.g. Weekly Restock)"
-              value={name}
-              onChange={e => setName(e.target.value)}
+              className="mb-6 w-full rounded-lg border px-4 py-3 text-lg"
             />
-            {selected.map(item => {
-              const prod = products.find(p => p.id === item.product_id);
+
+            {selectedItems.map((item) => {
+              const product = products.find(
+                (p) => p.id === item.product_id
+              )
+
               return (
-                <div key={item.variant_id} className="bg-white p-4 rounded mb-3 flex justify-between items-center">
-                  <div>
-                    <p className="font-medium">{prod?.title}</p>
-                  </div>
+                <div
+                  key={item.variant_id}
+                  className="mb-3 flex items-center justify-between rounded bg-white p-4"
+                >
+                  <span className="font-medium">
+                    {product?.title}
+                  </span>
+
                   <div className="flex items-center gap-3">
-                    <button onClick={() => updateQty(item.variant_id, -1)}>-</button>
-                    <span className="w-10 text-center">{item.quantity}</span>
-                    <button onClick={() => updateQty(item.variant_id, +1)}>+</button>
+                    <button
+                      onClick={() =>
+                        updateQuantity(item.variant_id, -1)
+                      }
+                    >
+                      −
+                    </button>
+
+                    <span className="w-10 text-center">
+                      {item.quantity}
+                    </span>
+
+                    <button
+                      onClick={() =>
+                        updateQuantity(item.variant_id, 1)
+                      }
+                    >
+                      +
+                    </button>
                   </div>
                 </div>
-              );
+              )
             })}
+
             <button
               onClick={handleSave}
-              disabled={loading || !name || selected.length === 0}
-              className="w-full bg-green-600 text-white py-4 rounded-lg font-bold mt-8 disabled:opacity-50"
+              disabled={
+                isSaving || !bundleName || selectedItems.length === 0
+              }
+              className="mt-8 w-full rounded-lg bg-green-600 py-4 font-bold text-white disabled:opacity-50"
             >
-              {loading ? 'Saving…' : 'Save Bundle'}
+              {isSaving ? "Saving…" : "Save Bundle"}
             </button>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -1,74 +1,120 @@
-'use client';
+"use client"
 
-import { useState, useEffect } from 'react';
-import CreateBundleModal from '@/components/CreateBundleModal';
-import { getSavedBundles } from '@/lib/util/bundleUtils';
-import { medusaClient } from '@/lib/medusa'; // ← change only if your client file is named differently
+import { useEffect, useState } from "react"
+
+import CreateBundleModal from "@/components/CreateBundleModal"
+import { getSavedBundles } from "@/lib/util/bundleUtils"
+import { medusaClient } from "@/lib/medusa"
+
+/* ----------------------------- Types ----------------------------- */
+
+type Bundle = {
+  id: string
+  name: string
+  created_at: string
+  items: { quantity: number }[]
+}
+
+/* ----------------------------- Component ----------------------------- */
 
 export default function MyBundlesPage() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [bundles, setBundles] = useState<any[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [bundles, setBundles] = useState<Bundle[]>([])
+  const [loading, setLoading] = useState(true)
+
+  /* ----------------------------- Data Loading ----------------------------- */
 
   const loadBundles = async () => {
     try {
-      const data = await getSavedBundles(medusaClient);
-      setBundles(data);
-    } catch (err) {
-      console.error('Failed to load bundles', err);
-      setBundles([]);
+      setLoading(true)
+      const data = await getSavedBundles(medusaClient)
+      setBundles(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error("Failed to load bundles", error)
+      setBundles([])
+    } finally {
+      setLoading(false)
     }
-  };
+  }
 
-  // Load bundles when page opens
   useEffect(() => {
-    loadBundles();
-  }, []);
+    loadBundles()
+  }, [])
+
+  /* ----------------------------- UI ----------------------------- */
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-10">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-12">
-          <h1 className="text-4xl font-bold text-gray-900">My Bundles</h1>
+        <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-4xl font-bold text-gray-900">
+            My Bundles
+          </h1>
 
           <button
-            onClick={() => setIsOpen(true)}
-            className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg px-8 py-4 rounded-full shadow-lg transition"
+            onClick={() => setIsModalOpen(true)}
+            className="rounded-full bg-purple-600 px-8 py-4 text-lg font-bold text-white shadow-lg transition hover:bg-purple-700"
           >
             + Create New Bundle
           </button>
         </div>
 
-        {/* Empty State */}
-        {bundles.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="bg-gray-200 border-2 border-dashed rounded-xl w-32 h-32 mx-auto mb-8" />
-            <p className="text-2xl font-medium text-gray-600">No bundles yet</p>
-            <p className="text-gray-500 mt-3">Create your first custom bundle with the button above!</p>
+        {/* Loading */}
+        {loading && (
+          <div className="py-20 text-center text-gray-500">
+            Loading bundles…
           </div>
-        ) : (
-          /* Saved Bundles Grid */
+        )}
+
+        {/* Empty State */}
+        {!loading && bundles.length === 0 && (
+          <div className="py-24 text-center">
+            <div className="mx-auto mb-8 h-32 w-32 rounded-xl border-2 border-dashed bg-gray-200" />
+            <p className="text-2xl font-medium text-gray-600">
+              No bundles yet
+            </p>
+            <p className="mt-3 text-gray-500">
+              Create your first custom bundle using the button above.
+            </p>
+          </div>
+        )}
+
+        {/* Bundles Grid */}
+        {!loading && bundles.length > 0 && (
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {bundles.map((bundle) => (
               <div
                 key={bundle.id}
-                className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition"
+                className="rounded-2xl bg-white p-8 shadow-lg transition hover:shadow-xl"
               >
-                <h3 className="text-2xl font-bold text-gray-800">{bundle.name}</h3>
-                <p className="text-sm text-gray-500 mt-2">
+                <h3 className="text-2xl font-bold text-gray-800">
+                  {bundle.name}
+                </h3>
+
+                <p className="mt-2 text-sm text-gray-500">
+                  Created{" "}
                   {new Date(bundle.created_at).toLocaleDateString()}
                 </p>
-                <p className="text-lg font-semibold text-gray-700 mt-6">
-                  {bundle.items.length} {bundle.items.length === 1 ? 'item' : 'items'}
+
+                <p className="mt-6 text-lg font-semibold text-gray-700">
+                  {bundle.items.length}{" "}
+                  {bundle.items.length === 1 ? "item" : "items"}
                 </p>
 
-                {/* Future buttons */}
                 <div className="mt-8 space-y-3">
-                  <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition">
-                    Add to Cart
+                  <button
+                    disabled
+                    className="w-full rounded-lg bg-blue-600 py-3 font-medium text-white opacity-60"
+                  >
+                    Add to Cart (coming soon)
                   </button>
-                  <button className="w-full border border-gray-300 py-3 rounded-lg hover:bg-gray-50 transition">
-                    Edit
+
+                  <button
+                    disabled
+                    className="w-full rounded-lg border border-gray-300 py-3 opacity-60"
+                  >
+                    Edit (coming soon)
                   </button>
                 </div>
               </div>
@@ -77,15 +123,15 @@ export default function MyBundlesPage() {
         )}
       </div>
 
-      {/* MODAL */}
+      {/* Create Bundle Modal */}
       <CreateBundleModal
-        isOpen={isOpen}
+        isOpen={isModalOpen}
         onClose={() => {
-          setIsOpen(false);
-          loadBundles(); // refresh the list after saving
+          setIsModalOpen(false)
+          loadBundles()
         }}
         sdk={medusaClient}
       />
     </div>
-  );
+  )
 }
