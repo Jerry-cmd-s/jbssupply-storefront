@@ -4,55 +4,36 @@ import { Button, Heading } from "@medusajs/ui"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
 import { ShieldCheck, Zap, PackageCheck } from "lucide-react"
-import Image from "next/image"
 
 // animations
 const wordVariants = { enter: { opacity: 0, y: 20 }, center: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -20 } }
 const secondaryTextVariants = { enter: { opacity: 0, y: 10 }, center: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -10 } }
 const buttonVariants = {
   hidden: { opacity: 0, scale: 0.95 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.5 } },
-  hover: { scale: 1.05 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: "easeOut" } },
+  hover: { scale: 1.05, transition: { duration: 0.2 } },
 }
 
 const Hero = () => {
   const [wordIndex, setWordIndex] = useState(0)
   const [showNextDay, setShowNextDay] = useState(false)
-
-  const words = ["Restaurants", "Salons & Spas", "Cafés", "Bars", "Offices"]
+  const words = ["Restaurants", "Salon & Spas", "Cafes", "Bars", "Office"]
 
   useEffect(() => {
     const interval = setInterval(() => {
       setWordIndex((prev) => (prev + 1) % words.length)
       setShowNextDay((prev) => !prev)
     }, 3000)
-
     return () => clearInterval(interval)
   }, [])
 
   return (
-    <section className="relative h-screen md:h-[70vh] w-full overflow-hidden">
+    <div className="relative h-screen md:h-[60vh] w-full overflow-hidden border-b border-ui-border-base bg-gradient-to-br from-black-900 to-red-600">
+      <div className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center px-6 sm:px-8 md:px-12">
 
-      {/* Background Image */}
-      <Image
-        src="/jbvan.png"
-        alt="JB’s Supply delivery service"
-        fill
-        priority
-        className="object-cover"
-      />
-
-      {/* Dark overlay for readability */}
-      <div className="absolute inset-0 bg-black/60 z-10" />
-
-      {/* Content */}
-      <div className="absolute inset-0 z-20 flex flex-col justify-center items-center text-center px-6">
-
-        <div className="max-w-5xl">
-          <Heading
-            level="h1"
-            className="text-white text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-tight"
-          >
+        {/* Main heading */}
+        <div className="max-w-5xl -mt-12 md:-mt-16">
+          <Heading level="h1" className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-tight text-black-900">
             Supplying{" "}
             <AnimatePresence mode="wait">
               <motion.span
@@ -62,7 +43,7 @@ const Hero = () => {
                 animate="center"
                 exit="exit"
                 transition={{ duration: 0.5 }}
-                className="text-red-500 inline-block"
+                className="text-blue-600 inline-block"
               >
                 {words[wordIndex]}
               </motion.span>
@@ -71,62 +52,51 @@ const Hero = () => {
           </Heading>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mt-6 max-w-3xl"
-        >
-          <Heading
-            level="h2"
-            className="text-white/90 text-lg sm:text-xl md:text-2xl font-light"
-          >
-            Reliable supply solutions designed to help your business grow — fast,
-            affordable, and dependable.
+        {/* Subheading */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }} className="mt-6 max-w-3xl">
+          <Heading level="h2" className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-black-900 font-light leading-relaxed">
+            Your Partner in Reliable Supply, Supporting Every Industry You Serve. JB’s Supply delivers{" "}
+            <span className="font-semibold">reliability</span> and <span className="font-semibold">value</span>.
           </Heading>
         </motion.div>
 
+        {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
           <motion.div variants={buttonVariants} initial="hidden" animate="visible">
-            <Button className="rounded-2xl px-10 py-5 bg-red-600 text-white text-lg">
+            <Button variant="primary" size="medium" className="rounded-2xl shadow-lg px-10 py-5 bg-green-900 text-white text-lg font-medium">
               Shop Bundles
             </Button>
           </motion.div>
 
           <motion.div variants={buttonVariants} initial="hidden" animate="visible" whileHover="hover">
-            <Button
-              variant="secondary"
-              className="rounded-2xl px-10 py-5 border-white text-white text-lg"
-            >
-              Build a Bundle
+            <Button variant="secondary" size="large" className="rounded-2xl px-10 py-5 border-2 border-black-900 text-black-900 text-lg font-medium">
+              Build Bundle
             </Button>
           </motion.div>
         </div>
 
+        {/* Delivery text */}
         <AnimatePresence mode="wait">
           <motion.p
-            key={showNextDay ? "next-day" : "payment"}
+            key={showNextDay ? "next-day" : "same-day"}
+            className="mt-6 text-lg sm:text-xl lg:text-2xl text-black-900 font-medium"
             variants={secondaryTextVariants}
             initial="enter"
             animate="center"
             exit="exit"
             transition={{ duration: 0.5 }}
-            className="mt-6 text-white text-lg sm:text-xl font-medium"
           >
             We offer{" "}
-            <span className="font-bold text-red-400">
-              {showNextDay ? "next-day delivery" : "flexible payment plans"}
+            <span className="font-bold text-red-600">
+              {showNextDay ? "next-day delivery" : "Payment Plan"}
             </span>
-            .
+            . Schedule your supplies with us today.
           </motion.p>
         </AnimatePresence>
-
       </div>
-    </section>
+    </div>
   )
 }
-
-//export default Hero
 
 const MainContent = () => {
   const cardVariants = {
