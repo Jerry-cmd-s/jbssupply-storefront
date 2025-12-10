@@ -1,13 +1,11 @@
 "use client"
 
 import { useEffect, useState } from "react"
-
-import CreateBundleModal from "@/components/CreateBundleModal"
-import { getSavedBundles } from "@/lib/util/bundleUtils"
-import { medusaClient } from "@/lib/medusa"
+import { sdk } from "@lib/config"                    // This is what your project uses
+import { getSavedBundles } from "@lib/util/bundleUtils"
+import CreateBundleModal from "components/CreateBundleModal"
 
 /* ----------------------------- Types ----------------------------- */
-
 type Bundle = {
   id: string
   name: string
@@ -16,18 +14,17 @@ type Bundle = {
 }
 
 /* ----------------------------- Component ----------------------------- */
-
 export default function MyBundlesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [bundles, setBundles] = useState<Bundle[]>([])
   const [loading, setLoading] = useState(true)
 
   /* ----------------------------- Data Loading ----------------------------- */
-
   const loadBundles = async () => {
     try {
       setLoading(true)
-      const data = await getSavedBundles(medusaClient)
+      // Pass the sdk instance (same shape as old medusaClient)
+      const data = await getSavedBundles(sdk)
       setBundles(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error("Failed to load bundles", error)
@@ -42,16 +39,12 @@ export default function MyBundlesPage() {
   }, [])
 
   /* ----------------------------- UI ----------------------------- */
-
   return (
     <div className="min-h-screen bg-gray-50 py-10">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-4xl font-bold text-gray-900">
-            My Bundles
-          </h1>
-
+          <h1 className="text-4xl font-bold text-gray-900">My Bundles</h1>
           <button
             onClick={() => setIsModalOpen(true)}
             className="rounded-full bg-purple-600 px-8 py-4 text-lg font-bold text-white shadow-lg transition hover:bg-purple-700"
@@ -71,9 +64,7 @@ export default function MyBundlesPage() {
         {!loading && bundles.length === 0 && (
           <div className="py-24 text-center">
             <div className="mx-auto mb-8 h-32 w-32 rounded-xl border-2 border-dashed bg-gray-200" />
-            <p className="text-2xl font-medium text-gray-600">
-              No bundles yet
-            </p>
+            <p className="text-2xl font-medium text-gray-600">No bundles yet</p>
             <p className="mt-3 text-gray-500">
               Create your first custom bundle using the button above.
             </p>
@@ -91,12 +82,9 @@ export default function MyBundlesPage() {
                 <h3 className="text-2xl font-bold text-gray-800">
                   {bundle.name}
                 </h3>
-
                 <p className="mt-2 text-sm text-gray-500">
-                  Created{" "}
-                  {new Date(bundle.created_at).toLocaleDateString()}
+                  Created {new Date(bundle.created_at).toLocaleDateString()}
                 </p>
-
                 <p className="mt-6 text-lg font-semibold text-gray-700">
                   {bundle.items.length}{" "}
                   {bundle.items.length === 1 ? "item" : "items"}
@@ -109,7 +97,6 @@ export default function MyBundlesPage() {
                   >
                     Add to Cart (coming soon)
                   </button>
-
                   <button
                     disabled
                     className="w-full rounded-lg border border-gray-300 py-3 opacity-60"
@@ -128,9 +115,9 @@ export default function MyBundlesPage() {
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false)
-          loadBundles()
+          loadBundles() // refresh list after creating/updating
         }}
-        sdk={medusaClient}
+        sdk={sdk} // pass the same sdk instance the rest of the app uses
       />
     </div>
   )
