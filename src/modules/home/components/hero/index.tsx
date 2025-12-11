@@ -63,7 +63,7 @@ const Hero = () => {
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
           <motion.div variants={buttonVariants} initial="hidden" animate="visible">
-            <Button variant="primary" size="medium" className="rounded-2xl shadow-lg px-10 py-5 bg-green-900 text-white text-lg font-medium">
+            <Button variant="primary" size="medium" className="rounded-2xl shadow-lg px-10 py-5 bg-red-900 text-white text-lg font-medium">
               Shop Bundles
             </Button>
           </motion.div>
