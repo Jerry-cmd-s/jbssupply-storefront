@@ -122,7 +122,8 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
               {products.map((product) => {
                 const variant = product.variants![0];
                 const isAdded = selected.some((i) => i.variant_id === variant.id);
-                const price = variant.prices?.[0]?.amount || 0;
+                const rawAmount = variant.prices?.[0]?.amount || 0;
+                const displayPrice = rawAmount < 1000 ? rawAmount.toFixed(2) : (rawAmount / 100).toFixed(2);
 
                 return (
                   <div
@@ -148,8 +149,8 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
                     </p>
                     {price > 0 && (
                       <p className="mt-2 text-lg font-bold text-purple-600">
-                        ${(price / 100).toFixed(2)}
-                      </p>
+  ${displayPrice}
+</p>
                     )}
                     <span
                       className={`mt-4 inline-block rounded-full px-6 py-2 text-sm font-bold transition ${
