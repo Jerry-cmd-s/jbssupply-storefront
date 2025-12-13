@@ -47,7 +47,7 @@ export default function MyBundlesPage() {
           <h1 className="text-4xl font-bold text-gray-900">My Bundles</h1>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="rounded-full bg-green-600 px-8 py-4 text-lg font-bold text-white shadow-lg transition hover:bg-purple-700"
+            className="rounded-full bg-black-600 px-8 py-4 text-lg font-bold text-white shadow-lg transition hover:bg-red-800"
           >
             + Create New Bundle
           </button>
