@@ -33,7 +33,7 @@ const Hero = () => {
 
         {/* Main heading */}
         <div className="max-w-5xl -mt-12 md:-mt-16">
-          <Heading level="h1" className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-tight text-black-900">
+          <Heading level="h2" className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-tight text-black-900">
             Supplying{" "}
             <AnimatePresence mode="wait">
               <motion.span
