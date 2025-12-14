@@ -2,23 +2,9 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { Bundle, BundleItem } from 'types/bundle';
 
-// Helper to get the connect.sid cookie (default in Medusa session auth)
-const getSessionCookie = () => {
-  if (typeof document === 'undefined') return '';
-  const match = document.cookie.match(new RegExp('(^| )connect.sid=([^;]+)'));
-  return match ? match[2] : '';
-};
-
-const getHeaders = () => {
-  const session = getSessionCookie();
-  return session ? { Cookie: `connect.sid=${session}` } : {};
-};
-
 export async function saveBundle(sdk: any, name: string, items: BundleItem[]) {
-  const headers = getHeaders();
-
   try {
-    const { customer } = await sdk.store.customer.retrieve({}, { headers });
+    const { customer } = await sdk.store.customer.retrieve();
 
     if (!customer) {
       throw new Error('No logged-in customer found. Please log in again.');
@@ -33,15 +19,12 @@ export async function saveBundle(sdk: any, name: string, items: BundleItem[]) {
       created_at: new Date().toISOString(),
     };
 
-    await sdk.store.customer.update(
-      {
-        metadata: {
-          ...customer.metadata,
-          bundles: [...existingBundles, newBundle],
-        },
+    await sdk.store.customer.update({
+      metadata: {
+        ...customer.metadata,
+        bundles: [...existingBundles, newBundle],
       },
-      { headers }
-    );
+    });
 
     return newBundle;
   } catch (err: any) {
@@ -51,10 +34,8 @@ export async function saveBundle(sdk: any, name: string, items: BundleItem[]) {
 }
 
 export async function getSavedBundles(sdk: any): Promise<Bundle[]> {
-  const headers = getHeaders();
-
   try {
-    const { customer } = await sdk.store.customer.retrieve({}, { headers });
+    const { customer } = await sdk.store.customer.retrieve();
     return (customer?.metadata?.bundles as Bundle[]) || [];
   } catch (err) {
     console.error('Load bundles failed:', err);
@@ -63,24 +44,19 @@ export async function getSavedBundles(sdk: any): Promise<Bundle[]> {
 }
 
 export async function deleteBundle(sdk: any, bundleId: string) {
-  const headers = getHeaders();
-
   try {
-    const { customer } = await sdk.store.customer.retrieve({}, { headers });
+    const { customer } = await sdk.store.customer.retrieve();
     if (!customer) return;
 
     const bundles = (customer.metadata?.bundles as Bundle[]) || [];
     const updated = bundles.filter((b: Bundle) => b.id !== bundleId);
 
-    await sdk.store.customer.update(
-      {
-        metadata: {
-          ...customer.metadata,
-          bundles: updated,
-        },
+    await sdk.store.customer.update({
+      metadata: {
+        ...customer.metadata,
+        bundles: updated,
       },
-      { headers }
-    );
+    });
   } catch (err) {
     console.error('Delete bundle failed:', err);
   }
