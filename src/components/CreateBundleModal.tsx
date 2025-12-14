@@ -167,8 +167,8 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
                     onClick={() => toggleItem(product, variant.id)}
                     className={`cursor-pointer rounded-xl border-2 p-5 text-center transition ${
                       isAdded
-                        ? "border-purple-600 bg-purple-50"
-                        : "border-gray-200 hover:border-purple-300"
+                        ? "border-purple-600 bg-black"
+                        : "border-gray-200 hover:border-red-300"
                     }`}
                   >
                     {product.thumbnail ? (
@@ -186,7 +186,7 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
                     </p>
 
                     {price && (
-                      <p className="mt-2 text-lg font-bold text-purple-600">
+                      <p className="mt-2 text-lg font-bold text-black">
                         {price.calculated_price}
                       </p>
                     )}
@@ -194,7 +194,7 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
                     <span
                       className={`mt-4 inline-block rounded-full px-6 py-2 text-sm font-bold ${
                         isAdded
-                          ? "bg-purple-600 text-white"
+                          ? "bg-black text-white"
                           : "bg-gray-200 text-gray-700"
                       }`}
                     >
@@ -263,7 +263,7 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
               disabled={
                 loading || !bundleName.trim() || selected.length === 0
               }
-              className="mt-10 w-full rounded-xl bg-purple-600 py-5 text-xl font-bold text-white disabled:opacity-50"
+              className="mt-10 w-full rounded-xl bg-black py-5 text-xl font-bold text-white disabled:opacity-50"
             >
               {loading ? "Saving..." : "Save Bundle"}
             </button>
