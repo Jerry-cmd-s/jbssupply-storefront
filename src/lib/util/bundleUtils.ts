@@ -1,11 +1,14 @@
 // src/lib/util/bundleUtils.ts
 import { v4 as uuidv4 } from 'uuid';
 import type { Bundle, BundleItem } from 'types/bundle';
+
 export async function saveBundle(sdk: any, name: string, items: BundleItem[]) {
   try {
     const { customer } = await sdk.store.customer.retrieve();
 
-    if (!customer) throw new Error('No logged-in customer');
+    if (!customer) {
+      throw new Error('No logged-in customer found. Please log in again.');
+    }
 
     const existingBundles: Bundle[] = (customer.metadata?.bundles as Bundle[]) || [];
 
@@ -41,8 +44,6 @@ export async function getSavedBundles(sdk: any): Promise<Bundle[]> {
 }
 
 export async function deleteBundle(sdk: any, bundleId: string) {
- // const headers = getHeaders();
-
   try {
     const { customer } = await sdk.store.customer.retrieve();
     if (!customer) return;
@@ -50,15 +51,12 @@ export async function deleteBundle(sdk: any, bundleId: string) {
     const bundles = (customer.metadata?.bundles as Bundle[]) || [];
     const updated = bundles.filter((b: Bundle) => b.id !== bundleId);
 
-    await sdk.store.customer.update(
-      {
-        metadata: {
-          ...customer.metadata,
-          bundles: updated,
-        },
+    await sdk.store.customer.update({
+      metadata: {
+        ...customer.metadata,
+        bundles: updated,
       },
-      //{ headers }
-    );
+    });
   } catch (err) {
     console.error('Delete bundle failed:', err);
   }
