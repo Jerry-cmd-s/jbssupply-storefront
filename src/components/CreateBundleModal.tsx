@@ -167,7 +167,7 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
                     onClick={() => toggleItem(product, variant.id)}
                     className={`cursor-pointer rounded-xl border-2 p-5 text-center transition ${
                       isAdded
-                        ? "border-purple-600 bg-black"
+                        ? "border-purple-600 bg-white"
                         : "border-gray-200 hover:border-red-300"
                     }`}
                   >
