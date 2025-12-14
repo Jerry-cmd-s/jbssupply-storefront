@@ -28,7 +28,7 @@ const Hero = () => {
   }, [])
 
   return (
-    <div className="relative h-screen md:h-[75vh] w-full overflow-hidden border-b border-ui-border-base bg-gradient-to-br from-black-900 to-red-600">
+    <div className="relative h-screen md:h-[60vh] w-full overflow-hidden border-b border-ui-border-base bg-gradient-to-br from-black-900 to-red-600">
       <div className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center px-6 sm:px-8 md:px-12">
 
         {/* Main heading */}
@@ -73,13 +73,13 @@ const Hero = () => {
           </motion.div>
 
           <motion.div variants={buttonVariants} initial="hidden" animate="visible" whileHover="hover">
-           import Link from "next/link"
+          
 
 <Link href="/account">
   <Button
     variant="secondary"
     size="large"
-    className="rounded-2xl px-10 py-5 border-2 border-black-900 text-black-900 text-lg font-medium"
+    className="rounded-2xl px-10 py-5 bg-blue-900 border-2 border-black-900 text-black-900 text-lg font-medium"
   >
     Build Bundle
   </Button>
