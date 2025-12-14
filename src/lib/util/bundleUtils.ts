@@ -1,3 +1,5 @@
+"use server"
+
 // src/lib/util/bundleUtils.ts
 import { v4 as uuidv4 } from 'uuid';
 import type { Bundle, BundleItem } from 'types/bundle';
