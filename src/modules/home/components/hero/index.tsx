@@ -28,7 +28,7 @@ const Hero = () => {
   }, [])
 
   return (
-    <div className="relative h-screen md:h-[60vh] w-full overflow-hidden border-b border-ui-border-base bg-gradient-to-br from-black-900 to-red-600">
+    <div className="relative h-screen md:h-[80vh] w-full overflow-hidden border-b border-ui-border-base bg-gradient-to-br from-black-900 to-red-600">
       <div className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center px-6 sm:px-8 md:px-12">
 
         {/* Main heading */}
@@ -67,7 +67,7 @@ const Hero = () => {
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
           <motion.div variants={buttonVariants} initial="hidden" animate="visible">
-            <Button variant="primary" size="medium" className="rounded-2xl shadow-lg px-10 py-5 bg-red-900 text-white text-lg font-medium">
+            <Button variant="primary" size="medium" className="rounded-2xl shadow-lg px-10 py-5 bg-black text-white text-lg font-medium">
               Shop Bundles
             </Button>
           </motion.div>
@@ -79,7 +79,7 @@ const Hero = () => {
   <Button
     variant="secondary"
     size="large"
-    className="rounded-2xl px-10 py-5 bg-blue-900 border-2 border-black-900 text-black-900 text-lg font-medium"
+    className="rounded-2xl px-10 py-5 bg-gray-800 border-2 border-black-900 text-black-900 text-lg font-medium"
   >
     Build Bundle
   </Button>
