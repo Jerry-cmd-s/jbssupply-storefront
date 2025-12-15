@@ -20,16 +20,10 @@ type Bundle = {
 };
 
 export async function saveBundleAction(name: string, items: BundleItem[]) {
-  const authHeaders = await getAuthHeaders();
-
-  // Clean the headers so TypeScript and SDK are happy
-  const cleanHeaders: Record<string, string> = {};
-  if ("authorization" in authHeaders && authHeaders.authorization) {
-    cleanHeaders.authorization = authHeaders.authorization;
-  }
+  const headers = await getAuthHeaders();
 
   try {
-    const { customer } = await sdk.store.customer.retrieve(undefined, cleanHeaders);
+    const { customer } = await sdk.store.customer.retrieve(undefined, headers);
 
     if (!customer) {
       return { success: false, error: "No logged-in customer" };
@@ -51,7 +45,7 @@ export async function saveBundleAction(name: string, items: BundleItem[]) {
           bundles: [...existingBundles, newBundle],
         },
       },
-      cleanHeaders
+      headers
     );
 
     revalidatePath('/account/bundles');
@@ -63,16 +57,10 @@ export async function saveBundleAction(name: string, items: BundleItem[]) {
 }
 
 export async function getSavedBundlesAction() {
-  const authHeaders = await getAuthHeaders();
-
-  // Same cleaning
-  const cleanHeaders: Record<string, string> = {};
-  if ("authorization" in authHeaders && authHeaders.authorization) {
-    cleanHeaders.authorization = authHeaders.authorization;
-  }
+  const headers = await getAuthHeaders();
 
   try {
-    const { customer } = await sdk.store.customer.retrieve(undefined, cleanHeaders);
+    const { customer } = await sdk.store.customer.retrieve(undefined, headers);
     return { success: true, bundles: (customer?.metadata?.bundles as Bundle[]) || [] };
   } catch (err) {
     console.error('Load bundles action failed:', err);
