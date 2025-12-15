@@ -5,8 +5,9 @@ import { useEffect, useState } from "react"
 import { X } from "lucide-react"
 import { HttpTypes } from "@medusajs/types"
 import { sdk } from "@lib/config"
-import { saveBundle } from "@lib/util/bundleUtils"
+//import { saveBundle } from "@lib/util/bundleUtils"
 import { getPricesForVariant } from "@lib/util/get-product-price"
+import { saveBundleAction } from 'app/actions/bundleActions';
 
 type BundleItem = {
   product_id: string
@@ -106,29 +107,26 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
    * Save bundle
    */
   const handleSave = async () => {
-    if (!bundleName.trim()) {
-      alert("Please enter a bundle name")
-      return
-    }
-
-    if (selected.length === 0) {
-      alert("Add at least one product")
-      return
-    }
-
-    setLoading(true)
-
-    try {
-      await saveBundle(sdk, bundleName.trim(), selected)
-      alert("Bundle saved successfully")
-      onClose()
-    } catch (err) {
-      console.error(err)
-      alert("Failed to save bundle")
-    } finally {
-      setLoading(false)
-    }
+  if (!bundleName.trim()) {
+    alert('Please enter a bundle name');
+    return;
   }
+  if (selected.length === 0) {
+    alert('Add at least one product');
+    return;
+  }
+
+  setLoading(true);
+  const result = await saveBundleAction(bundleName.trim(), selected);
+  setLoading(false);
+
+  if (result.success) {
+    alert('Bundle saved successfully!');
+    onClose();
+  } else {
+    alert(result.error || 'Failed to save bundle');
+  }
+};
 
   if (!isOpen) return null
 

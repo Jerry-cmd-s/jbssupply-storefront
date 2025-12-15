@@ -1,42 +1,48 @@
-"use client"
+// src/app/[countryCode]/(main)/account/@dashboard/bundles/page.tsx
+"use client";
 
-import { useEffect, useState } from "react"
-import { sdk } from "@lib/config"                    // This is what your project uses
-import { getSavedBundles } from "@lib/util/bundleUtils"
-import CreateBundleModal from "components/CreateBundleModal"
+import { useEffect, useState } from "react";
+import { sdk } from "@lib/config";
+import CreateBundleModal from "components/CreateBundleModal";
+import { getSavedBundlesAction } from "app/actions/bundleActions"; // <-- new import
 
 /* ----------------------------- Types ----------------------------- */
 type Bundle = {
-  id: string
-  name: string
-  created_at: string
-  items: { quantity: number }[]
-}
+  id: string;
+  name: string;
+  created_at: string;
+  items: { quantity: number }[];
+};
 
 /* ----------------------------- Component ----------------------------- */
 export default function MyBundlesPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [bundles, setBundles] = useState<Bundle[]>([])
-  const [loading, setLoading] = useState(true)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [bundles, setBundles] = useState<Bundle[]>([]);
+  const [loading, setLoading] = useState(true);
 
   /* ----------------------------- Data Loading ----------------------------- */
   const loadBundles = async () => {
-    try {
-      setLoading(true)
-      // Pass the sdk instance (same shape as old medusaClient)
-      const data = await getSavedBundles(sdk)
-      setBundles(Array.isArray(data) ? data : [])
-    } catch (error) {
-      console.error("Failed to load bundles", error)
-      setBundles([])
-    } finally {
-      setLoading(false)
+  try {
+    setLoading(true);
+    const result = await getSavedBundlesAction(); // <-- server action call
+
+    if (result.success) {
+      setBundles(Array.isArray(result.bundles) ? result.bundles : []);
+    } else {
+      console.error("Failed to load bundles");
+      setBundles([]);
     }
+  } catch (error) {
+    console.error("Failed to load bundles", error);
+    setBundles([]);
+  } finally {
+    setLoading(false);
   }
+};
 
   useEffect(() => {
-    loadBundles()
-  }, [])
+    loadBundles();
+  }, []);
 
   /* ----------------------------- UI ----------------------------- */
   return (
@@ -89,7 +95,6 @@ export default function MyBundlesPage() {
                   {bundle.items.length}{" "}
                   {bundle.items.length === 1 ? "item" : "items"}
                 </p>
-
                 <div className="mt-8 space-y-3">
                   <button
                     disabled
@@ -114,11 +119,11 @@ export default function MyBundlesPage() {
       <CreateBundleModal
         isOpen={isModalOpen}
         onClose={() => {
-          setIsModalOpen(false)
-          loadBundles() // refresh list after creating/updating
+          setIsModalOpen(false);
+          loadBundles(); // Refresh the list after saving
         }}
-        sdk={sdk} // pass the same sdk instance the rest of the app uses
+       // sdk={sdk}
       />
     </div>
-  )
+  );
 }
