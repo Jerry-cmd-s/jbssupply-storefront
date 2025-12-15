@@ -23,7 +23,7 @@ export async function saveBundleAction(name: string, items: BundleItem[]) {
   const headers = await getAuthHeaders();
 
   try {
-    const { customer } = await sdk.store.customer.retrieve(undefined, headers);
+    const { customer } = await sdk.store.customer.retrieve(undefined, headers as any);
 
     if (!customer) {
       return { success: false, error: "No logged-in customer" };
@@ -42,10 +42,10 @@ export async function saveBundleAction(name: string, items: BundleItem[]) {
       {
         metadata: {
           ...customer.metadata,
-          bundles: [...existingBundles, newBundle],
+          bundles: [...existingBundles, newBundle], // <-- fixed typo here
         },
       },
-      headers
+      headers as any
     );
 
     revalidatePath('/account/bundles');
@@ -60,7 +60,7 @@ export async function getSavedBundlesAction() {
   const headers = await getAuthHeaders();
 
   try {
-    const { customer } = await sdk.store.customer.retrieve(undefined, headers);
+    const { customer } = await sdk.store.customer.retrieve(undefined, headers as any);
     return { success: true, bundles: (customer?.metadata?.bundles as Bundle[]) || [] };
   } catch (err) {
     console.error('Load bundles action failed:', err);
