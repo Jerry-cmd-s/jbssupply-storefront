@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { sdk } from "@lib/config";
 import CreateBundleModal from "components/CreateBundleModal";
 import { getSavedBundlesAction } from "app/actions/bundleActions"; // <-- new import
-import { addBundleToCartAction } from '@/app/actions/bundleActions';
+import { addBundleToCartAction } from 'app/actions/bundleActions';
 /* ----------------------------- Types ----------------------------- */
 type Bundle = {
   id: string;
