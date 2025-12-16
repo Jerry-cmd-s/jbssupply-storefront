@@ -76,26 +76,24 @@ export async function addBundleToCartAction(bundleItems: BundleItem[]) {
   const headers = await getAuthHeaders();
 
   try {
-    // Get current cart (or create one if none exists)
+    // Get current cart or create one
     let cart = await sdk.store.cart.retrieve(undefined, headers);
 
     if (!cart) {
-      // Create new cart (fallback region "us" — adjust if needed)
-      const regionResp = await sdk.admin.region.list({ limit: 1 });
-      const regionId = regionResp.regions[0]?.id || "reg_01";
-
-      const createResp = await sdk.store.cart.create({ region_id: regionId }, headers);
-      cart = createResp.cart;
+      // Create a new cart (fallback region "us" — you can make this dynamic if needed)
+      const { cart: newCart } = await sdk.store.cart.create({ region_id: "reg_01" }, headers);
+      cart = newCart;
+      await setCartId(cart.id);
     }
 
-    // Clear all existing line items
+    // CLEAR ALL EXISTING LINE ITEMS
     if (cart.items && cart.items.length > 0) {
       for (const item of cart.items) {
         await sdk.store.cart.lineItems.delete(cart.id, item.id, headers);
       }
     }
 
-    // Add bundle items
+    // ADD BUNDLE ITEMS
     for (const item of bundleItems) {
       await sdk.store.cart.lineItems.create(
         cart.id,
@@ -108,7 +106,11 @@ export async function addBundleToCartAction(bundleItems: BundleItem[]) {
     }
 
     // Revalidate cart cache
-    revalidatePath("/cart");
+    const cartCacheTag = await getCacheTag("carts");
+    revalidateTag(cartCacheTag);
+    const fulfillmentCacheTag = await getCacheTag("fulfillment");
+    revalidateTag(fulfillmentCacheTag);
+
     return { success: true, message: "Bundle loaded into cart!" };
   } catch (err: any) {
     console.error("Add bundle to cart failed:", err);

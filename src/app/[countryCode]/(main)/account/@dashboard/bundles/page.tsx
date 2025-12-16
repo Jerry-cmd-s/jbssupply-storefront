@@ -96,20 +96,40 @@ export default function MyBundlesPage() {
                   {bundle.items.length === 1 ? "item" : "items"}
                 </p>
                 <div className="mt-8 space-y-3">
-                 <button
-  onClick={async () => {
-    const result = await addBundleToCartAction(bundle.items);
-    if (result.success) {
-      alert("Your bundle is ready in the cart!");
-      window.location.href = "/cart"; // Takes them to cart with clean bundle
-    } else {
-      alert(result.error || "Failed to load bundle");
-    }
-  }}
-  className="w-full rounded-lg bg-blue-600 py-3 font-medium text-white hover:bg-blue-700 transition"
+               <div
+  key={bundle.id}
+  className="rounded-2xl bg-white p-8 shadow-lg transition hover:shadow-xl"
 >
-  Load My Bundle & Go to Cart
-</button>
+  <h3 className="text-2xl font-bold text-gray-800">{bundle.name}</h3>
+  <p className="mt-2 text-sm text-gray-500">
+    Created {new Date(bundle.created_at).toLocaleDateString()}
+  </p>
+  <p className="mt-6 text-lg font-semibold text-gray-700">
+    {bundle.items.length} {bundle.items.length === 1 ? "item" : "items"}
+  </p>
+  <div className="mt-8 space-y-3">
+    <button
+      onClick={async () => {
+        const result = await addBundleToCartAction(bundle.items);
+        if (result.success) {
+          alert("Your bundle is ready in the cart!");
+          window.location.href = "/cart";
+        } else {
+          alert(result.error || "Failed to load bundle");
+        }
+      }}
+      className="w-full rounded-lg bg-blue-600 py-3 font-medium text-white hover:bg-blue-700 transition"
+    >
+      Load My Bundle & Go to Cart
+    </button>
+    <button
+      disabled
+      className="w-full rounded-lg border border-gray-300 py-3 opacity-60"
+    >
+      Edit (coming soon)
+    </button>
+  </div>
+</div>
                   <button
                     disabled
                     className="w-full rounded-lg border border-gray-300 py-3 opacity-60"
