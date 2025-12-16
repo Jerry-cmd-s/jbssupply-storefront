@@ -96,12 +96,20 @@ export default function MyBundlesPage() {
                   {bundle.items.length === 1 ? "item" : "items"}
                 </p>
                 <div className="mt-8 space-y-3">
-                  <button
-                    disabled
-                    className="w-full rounded-lg bg-blue-600 py-3 font-medium text-white opacity-60"
-                  >
-                    Add to Cart (coming soon)
-                  </button>
+                 <button
+  onClick={async () => {
+    const result = await addBundleToCartAction(bundle.items);
+    if (result.success) {
+      alert("Your bundle is ready in the cart!");
+      window.location.href = "/cart"; // Takes them to cart with clean bundle
+    } else {
+      alert(result.error || "Failed to load bundle");
+    }
+  }}
+  className="w-full rounded-lg bg-blue-600 py-3 font-medium text-white hover:bg-blue-700 transition"
+>
+  Load My Bundle & Go to Cart
+</button>
                   <button
                     disabled
                     className="w-full rounded-lg border border-gray-300 py-3 opacity-60"
