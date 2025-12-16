@@ -23,7 +23,10 @@ export async function saveBundleAction(name: string, items: BundleItem[]) {
   const headers = await getAuthHeaders();
 
   try {
-    const { customer } = await sdk.store.customer.retrieve(undefined, headers as any);
+    // Use low-level fetch like in orders.ts — this works with your auth
+    const { customer } = await sdk.client.fetch("/store/customers/me", {
+      headers,
+    });
 
     if (!customer) {
       return { success: false, error: "No logged-in customer" };
@@ -38,15 +41,16 @@ export async function saveBundleAction(name: string, items: BundleItem[]) {
       created_at: new Date().toISOString(),
     };
 
-    await sdk.store.customer.update(
-      {
+    await sdk.client.fetch("/store/customers/me", {
+      method: "POST",
+      headers,
+      body: {
         metadata: {
           ...customer.metadata,
-          bundles: [...existingBundles, newBundle], // <-- fixed typo here
+          bundles: [...existingBundles, newBundle],
         },
       },
-      headers as any
-    );
+    });
 
     revalidatePath('/account/bundles');
     return { success: true, bundle: newBundle };
@@ -60,7 +64,10 @@ export async function getSavedBundlesAction() {
   const headers = await getAuthHeaders();
 
   try {
-    const { customer } = await sdk.store.customer.retrieve(undefined, headers as any);
+    const { customer } = await sdk.client.fetch("/store/customers/me", {
+      headers,
+    });
+
     return { success: true, bundles: (customer?.metadata?.bundles as Bundle[]) || [] };
   } catch (err) {
     console.error('Load bundles action failed:', err);
