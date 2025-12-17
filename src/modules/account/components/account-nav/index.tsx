@@ -84,7 +84,7 @@ const AccountNav = ({
                 {/* NEW: BUILD BUNDLE SUBSCRIPTION */}
                 <li>
                   <LocalizedClientLink
-                    href="/account/subscriptions"
+                    href="/account/bundles"
                     className="flex items-center justify-between py-4 border-b border-gray-200 px-8"
                     data-testid="subscriptions-link"
                   >
