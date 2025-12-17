@@ -1,12 +1,20 @@
 // src/app/actions/bundleActions.ts
 "use server";
-
+import { HttpTypes } from "@medusajs/types"
 import { v4 as uuidv4 } from "uuid";
 import { sdk } from "@lib/config";
-import { getAuthHeaders } from "@lib/data/cookies";
+//import { getAuthHeaders } from "@lib/data/cookies";
 import { revalidatePath } from "next/cache";
 import { getCacheTag } from "@lib/data/cookies"; // Added to match your cart page cache revalidation
-
+import {
+  getAuthHeaders,
+  getCacheOptions,
+ // getCacheTag,
+  getCartId,
+  removeCartId,
+  setCartId,
+} from "@lib/data/cookies"
+//import { getRegion } from "./regions"
 type BundleItem = {
   product_id: string;
   variant_id: string;
@@ -22,13 +30,11 @@ type Bundle = {
 
 /* Save a new bundle to customer metadata */
 export async function saveBundleAction(name: string, items: BundleItem[]) {
-  const headers = await getAuthHeaders();
-
   try {
-    const { customer } = await sdk.store.customer.retrieve(undefined, headers as any);
+    const { customer } = await sdk.store.customer.retrieve();
 
     if (!customer) {
-      return { success: false, error: "No logged-in customer found" };
+      return { success: false, error: "No logged-in customer" };
     }
 
     const existingBundles: Bundle[] = (customer.metadata?.bundles as Bundle[]) || [];
@@ -40,15 +46,12 @@ export async function saveBundleAction(name: string, items: BundleItem[]) {
       created_at: new Date().toISOString(),
     };
 
-    await sdk.store.customer.update(
-      {
-        metadata: {
-          ...customer.metadata,
-          bundles: [...existingBundles, newBundle],
-        },
+    await sdk.store.customer.update({
+      metadata: {
+        ...customer.metadata,
+        bundles: [...existingBundles, newBundle],
       },
-      headers as any
-    );
+    });
 
     revalidatePath("/account/bundles");
     return { success: true, bundle: newBundle };
@@ -60,17 +63,14 @@ export async function saveBundleAction(name: string, items: BundleItem[]) {
 
 /* Load saved bundles from customer metadata */
 export async function getSavedBundlesAction() {
-  const headers = await getAuthHeaders();
-
   try {
-    const { customer } = await sdk.store.customer.retrieve(undefined, headers as any);
+    const { customer } = await sdk.store.customer.retrieve();
     return { success: true, bundles: (customer?.metadata?.bundles as Bundle[]) || [] };
   } catch (err) {
     console.error("Load bundles action failed:", err);
     return { success: false, bundles: [] };
   }
 }
-
 /* Add bundle to cart — clears current cart first, then adds bundle items, then refreshes cache */
 export async function addBundleToCartAction(bundleItems: BundleItem[]) {
   const headers = await getAuthHeaders();
