@@ -79,13 +79,13 @@ export async function addBundleToCartAction(bundleItems: BundleItem[]) {
 
   try {
     // Get or create cart
-    let cart = await sdk.store.cart.retrieve(undefined, undefined, headers);
+    let cart = await sdk.store.cart.retrieve(undefined, headers);
 
     if (!cart) {
       const region = await getRegion("us"); // fallback — adjust if needed
       if (!region) throw new Error("No region found");
 
-      const { cart: newCart } = await sdk.store.cart.create({ region_id: region.id }, undefined, headers);
+      const { cart: newCart } = await sdk.store.cart.create({ region_id: region.id }, headers);
       cart = newCart;
       await setCartId(cart.id);
     }
@@ -93,13 +93,13 @@ export async function addBundleToCartAction(bundleItems: BundleItem[]) {
     // CLEAR ALL EXISTING LINE ITEMS
     if (cart.items && cart.items.length > 0) {
       for (const item of cart.items) {
-        await sdk.store.cart.lineItems.delete(cart.id, item.id, headers);
+        await sdk.store.cart.deleteLineItem(cart.id, item.id, headers);
       }
     }
 
     // ADD BUNDLE ITEMS
     for (const item of bundleItems) {
-      await sdk.store.cart.lineItems.create(
+      await sdk.store.cart.createLineItem(
         cart.id,
         {
           variant_id: item.variant_id,
