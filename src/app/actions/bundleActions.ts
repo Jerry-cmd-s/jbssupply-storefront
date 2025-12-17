@@ -19,12 +19,13 @@ type Bundle = {
   created_at: string;
 };
 
-/* Save a new bundle */
 export async function saveBundleAction(name: string, items: BundleItem[]) {
   const headers = await getAuthHeaders();
 
   try {
-    const { customer } = await sdk.client.fetch("/store/customers/me", { headers });
+    const { customer } = await sdk.client.fetch("/store/customers/me", {
+      headers,
+    });
 
     if (!customer) {
       return { success: false, error: "No logged-in customer" };
@@ -58,12 +59,14 @@ export async function saveBundleAction(name: string, items: BundleItem[]) {
   }
 }
 
-/* Load all saved bundles */
 export async function getSavedBundlesAction() {
   const headers = await getAuthHeaders();
 
   try {
-    const { customer } = await sdk.client.fetch("/store/customers/me", { headers });
+    const { customer } = await sdk.client.fetch("/store/customers/me", {
+      headers,
+    });
+
     return { success: true, bundles: (customer?.metadata?.bundles as Bundle[]) || [] };
   } catch (err) {
     console.error("Load bundles action failed:", err);
@@ -71,17 +74,18 @@ export async function getSavedBundlesAction() {
   }
 }
 
-/* Add bundle to cart — clears current cart first, then adds bundle items */
 export async function addBundleToCartAction(bundleItems: BundleItem[]) {
   const headers = await getAuthHeaders();
 
   try {
-    // Get current cart or create one
-    let cart = await sdk.store.cart.retrieve(undefined, headers);
+    // Get or create cart
+    let cart = await sdk.store.cart.retrieve(undefined, undefined, headers);
 
     if (!cart) {
-      // Create a new cart (fallback region "us" — you can make this dynamic if needed)
-      const { cart: newCart } = await sdk.store.cart.create({ region_id: "reg_01" }, headers);
+      const region = await getRegion("us"); // fallback — adjust if needed
+      if (!region) throw new Error("No region found");
+
+      const { cart: newCart } = await sdk.store.cart.create({ region_id: region.id }, undefined, headers);
       cart = newCart;
       await setCartId(cart.id);
     }
@@ -105,7 +109,7 @@ export async function addBundleToCartAction(bundleItems: BundleItem[]) {
       );
     }
 
-    // Revalidate cart cache
+    // Revalidate cache
     const cartCacheTag = await getCacheTag("carts");
     revalidateTag(cartCacheTag);
     const fulfillmentCacheTag = await getCacheTag("fulfillment");
