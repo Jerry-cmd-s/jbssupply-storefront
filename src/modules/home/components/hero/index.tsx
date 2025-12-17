@@ -33,32 +33,32 @@ const Hero = () => {
 
         {/* Main heading */}
     <div className="max-w-5xl -mt-12 md:-mt-16">
-  <Heading
-    level="h2"
-    className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight text-black-900"
-  >
-    Supplying{" "}
-    <AnimatePresence mode="wait">
-      <motion.span
-        key={words[wordIndex]}
-        variants={wordVariants}
-        initial="enter"
-        animate="center"
-        exit="exit"
-        transition={{ duration: 0.5 }}
-        className="text-blue-600 inline-block"
-      >
-        {words[wordIndex]}
-      </motion.span>
-    </AnimatePresence>{" "}
-    with Total Solutions
-  </Heading>
+ <Heading
+  level="h2"
+  className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight text-black-900 font-calibri"
+>
+  Supplying{" "}
+  <AnimatePresence mode="wait">
+    <motion.span
+      key={words[wordIndex]}
+      variants={wordVariants}
+      initial="enter"
+      animate="center"
+      exit="exit"
+      transition={{ duration: 0.5 }}
+      className="text-blue-600 inline-block"
+    >
+      {words[wordIndex]}
+    </motion.span>
+  </AnimatePresence>{" "}
+  with Total Solutions
+</Heading>
 </div>
 
 
         {/* Subheading */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }} className="mt-6 max-w-3xl">
-          <Heading level="h2" className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-black-900 font-light leading-relaxed">
+          <Heading level="h2" className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-black-900 font-light leading-relaxed font-calibri">
             Your Partner in Reliable Supply, Supporting Every Industry You Serve. JB’s Supply delivers{" "}
             <span className="font-semibold">reliability</span> and <span className="font-semibold">value</span>.
           </Heading>
@@ -67,7 +67,7 @@ const Hero = () => {
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
           <motion.div variants={buttonVariants} initial="hidden" animate="visible">
-            <Button variant="primary" size="medium" className="rounded-2xl shadow-lg px-10 py-5 bg-red-900 text-white text-lg font-medium">
+            <Button variant="primary" size="medium" className="rounded-2xl shadow-lg px-10 py-5 bg-red-900 text-white text-lg font-medium font-calibri">
               Shop Bundles
             </Button>
           </motion.div>
@@ -79,7 +79,7 @@ const Hero = () => {
   <Button
     variant="secondary"
     size="large"
-    className="rounded-2xl px-10 py-5 bg-gray border-2 border-black-900 text-black-900 text-lg font-medium"
+    className="rounded-2xl px-10 py-5 bg-gray border-2 border-black-900 text-black-900 text-lg font-medium font-calibri"
   >
     Build Bundle
   </Button>
@@ -92,7 +92,7 @@ const Hero = () => {
         <AnimatePresence mode="wait">
           <motion.p
             key={showNextDay ? "next-day" : "same-day"}
-            className="mt-6 text-lg sm:text-xl lg:text-2xl text-black-900 font-medium"
+            className="mt-6 text-lg sm:text-xl lg:text-2xl text-black-900 font-medium font-calibri"
             variants={secondaryTextVariants}
             initial="enter"
             animate="center"
@@ -100,7 +100,7 @@ const Hero = () => {
             transition={{ duration: 0.5 }}
           >
             We offer{" "}
-            <span className="font-bold text-red-600">
+            <span className="font-bold text-red-600 font-calibri">
               {showNextDay ? "next-day delivery" : "Payment Plan"}
             </span>
             . Schedule your supplies with us today.
@@ -142,10 +142,10 @@ const MainContent = () => {
       {/* Why Choose Us */}
       <section className="content-container text-center mb-16 sm:mb-20">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-          <Heading level="h2" className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-black-900">
+          <Heading level="h2" className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-black-900 font-calibri">
             Why Choose JB’s Supply?
           </Heading>
-          <p className="text-gray-700 text-base sm:text-lg max-w-xl md:max-w-2xl mx-auto">
+          <p className="text-gray-700 text-base sm:text-lg max-w-xl md:max-w-2xl mx-auto font-calibri">
             We provide affordable, eco-friendly, and complete supply solutions that help small businesses grow with confidence.
           </p>
         </motion.div>
@@ -177,10 +177,10 @@ const MainContent = () => {
       {/* Social proof */}
       <section className="content-container text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-          <Heading level="h2" className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-black-900">
+          <Heading level="h2" className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-black-900 font-calibri">
             Trusted by Local Businesses
           </Heading>
-          <p className="text-gray-700 text-base sm:text-lg max-w-xl md:max-w-2xl mx-auto">
+          <p className="text-gray-700 text-base sm:text-lg max-w-xl md:max-w-2xl mx-auto font-calibri">
             From restaurants and cafés to spas and beyond, JB’s Supply helps small businesses thrive with reliable service and tailored bundles.
           </p>
         </motion.div>
