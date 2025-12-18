@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { sdk } from "@lib/config";
 import { getAuthHeaders } from "@lib/data/cookies";
 import { revalidatePath } from "next/cache";
-
+import { getRegion } from "lib/data/regions";
 type BundleItem = {
   product_id: string;
   variant_id: string;
@@ -75,49 +75,61 @@ export async function getSavedBundlesAction() {
 }
 
 export async function addBundleToCartAction(bundleItems: BundleItem[]) {
-  const headers = await getAuthHeaders();
-
   try {
-    // Get or create cart
-    let cart = await sdk.store.cart.retrieve(undefined, undefined, headers);
+    let cartId = await getCartId();
+    let cart;
 
-    if (!cart) {
-      const region = await getRegion("us"); // fallback — adjust if needed
-      if (!region) throw new Error("No region found");
-
-      const { cart: newCart } = await sdk.store.cart.create({ region_id: region.id }, undefined, headers);
-      cart = newCart;
-      await setCartId(cart.id);
-    }
-
-    // CLEAR ALL EXISTING LINE ITEMS
-    if (cart.items && cart.items.length > 0) {
-      for (const item of cart.items) {
-        await sdk.store.cart.lineItems.delete(cart.id, item.id, headers);
+    // 1️⃣ Retrieve existing cart
+    if (cartId) {
+      try {
+        const res = await sdk.store.cart.retrieve(cartId);
+        cart = res.cart;
+      } catch {
+        cartId = null;
       }
     }
 
-    // ADD BUNDLE ITEMS
-    for (const item of bundleItems) {
-      await sdk.store.cart.lineItems.create(
-        cart.id,
-        {
-          variant_id: item.variant_id,
-          quantity: item.quantity,
-        },
-        headers
+    // 2️⃣ Create cart if missing
+    if (!cart) {
+      const region = await getRegion("us");
+      if (!region) throw new Error("Region not found");
+
+      const res = await sdk.store.cart.create({
+        region_id: region.id,
+      });
+
+      cart = res.cart;
+      await setCartId(cart.id);
+    }
+
+    // 3️⃣ Clear existing line items
+    if (cart.items?.length) {
+      await Promise.all(
+        cart.items.map((item) =>
+          sdk.store.cart.lineItems.delete(cart.id, item.id)
+        )
       );
     }
 
-    // Revalidate cache
-    const cartCacheTag = await getCacheTag("carts");
-    revalidateTag(cartCacheTag);
-    const fulfillmentCacheTag = await getCacheTag("fulfillment");
-    revalidateTag(fulfillmentCacheTag);
+    // 4️⃣ Add bundle items
+    await Promise.all(
+      bundleItems.map((item) =>
+        sdk.store.cart.lineItems.create(cart.id, {
+          variant_id: item.variant_id,
+          quantity: item.quantity,
+        })
+      )
+    );
 
-    return { success: true, message: "Bundle loaded into cart!" };
+    return {
+      success: true,
+      cart_id: cart.id,
+    };
   } catch (err: any) {
     console.error("Add bundle to cart failed:", err);
-    return { success: false, error: err.message || "Failed to load bundle into cart" };
+    return {
+      success: false,
+      error: err.message ?? "Failed to add bundle to cart",
+    };
   }
 }
