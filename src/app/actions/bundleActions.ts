@@ -9,7 +9,7 @@ import { getRegion } from "lib/data/regions";
 import { getCartId,setCartId, } from "@lib/data/cookies";
 const MEDUSA_URL = "https://jbssupply.medusajs.app";
 import type { BundleItem } from "types/bundle";
-
+import { cookies } from "next/headers";
 
 
 export async function saveBundleAction(name: string, items: BundleItem[]) {
@@ -52,6 +52,10 @@ export async function saveBundleAction(name: string, items: BundleItem[]) {
   }
 }
 
+
+
+
+
 export async function getSavedBundlesAction() {
   const headers = await getAuthHeaders();
 
@@ -67,50 +71,71 @@ export async function getSavedBundlesAction() {
   }
 }
 
+
+
+
+
+
+
 export async function addBundleToCartAction(bundleItems: BundleItem[]) {
-  const headers = await getAuthHeaders();
-
   try {
-    // Get or create cart
-    let cart = await sdk.store.cart.retrieve(undefined, headers as any);
+    const cookieStore = cookies();
+    let cartId = cookieStore.get("_medusa_cart_id")?.value;
+    let cart;
 
-    if (!cart) {
-      const region = await getRegion("us"); // fallback — adjust if needed
-      if (!region) throw new Error("No region found");
+    // Retrieve cart
+    if (cartId) {
+      const res = await fetch(`${MEDUSA_URL}/store/carts/${cartId}`, {
+        credentials: "include",
+      });
 
-      const { cart: newCart } = await sdk.store.cart.create({ region_id: region.id }, headers as any);
-      cart = newCart;
-      await setCartId(cart.id);
-    }
-
-    // CLEAR ALL EXISTING LINE ITEMS
-    if (cart.items && cart.items.length > 0) {
-      for (const item of cart.items) {
-        await sdk.store.cart.deleteLineItem(cart.id, item.id, headers as any);
+      if (res.ok) {
+        cart = (await res.json()).cart;
       }
     }
 
-    // ADD BUNDLE ITEMS — CORRECT METHOD NAME
-    for (const item of bundleItems) {
-      await sdk.store.cart.createLineItem(
-        cart.id,
-        {
-          variant_id: item.variant_id,
-          quantity: item.quantity,
-        },
-        headers as any
+    // Create cart if needed
+    if (!cart) {
+      const res = await fetch(`${MEDUSA_URL}/store/carts`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ region_id: "us" }),
+      });
+
+      cart = (await res.json()).cart;
+
+      cookieStore.set("_medusa_cart_id", cart.id, {
+        httpOnly: true,
+        sameSite: "strict",
+        maxAge: 60 * 60 * 24 * 7,
+      });
+    }
+
+    // Clear cart
+    for (const item of cart.items || []) {
+      await fetch(
+        `${MEDUSA_URL}/store/carts/${cart.id}/line-items/${item.id}`,
+        { method: "DELETE", credentials: "include" }
       );
     }
 
-    // Revalidate cache
-    const cartCacheTag = await getCacheTag("carts");
-    revalidateTag(cartCacheTag);
-    const fulfillmentCacheTag = await getCacheTag("fulfillment");
-    revalidateTag(fulfillmentCacheTag);
+    // Add bundle items
+    for (const item of bundleItems) {
+      await fetch(`${MEDUSA_URL}/store/carts/${cart.id}/line-items`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          variant_id: item.variant_id,
+          quantity: item.quantity,
+        }),
+      });
+    }
 
-    return { success: true, message: "Bundle loaded into cart!" };
+    return { success: true };
   } catch (err: any) {
     console.error("Add bundle to cart failed:", err);
-    return { success: false, error: err.message || "Failed to load bundle into cart" };
+    return { success: false, error: err.message };
   }
 }
