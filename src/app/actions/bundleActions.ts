@@ -76,19 +76,35 @@ export async function getSavedBundlesAction() {
 
 
 
-
 export async function addBundleToCartAction(bundleItems: BundleItem[]) {
   const headers = await getAuthHeaders();
+  const cartHeaders = headers as any; // Adjust typing if needed; assumes headers is { Authorization: 'Bearer ...' }
 
   try {
-    // Get or create cart
-    let cart = await sdk.store.cart.retrieve(undefined, headers as any);
+    // Get existing cart ID from cookies
+    let cartId = await getCartId();
+    let cart;
 
+    if (cartId) {
+      try {
+        // Retrieve existing cart (pass undefined for query, headers last)
+        cart = await sdk.store.cart.retrieve(cartId, undefined, cartHeaders);
+      } catch (err) {
+        console.error("Failed to retrieve existing cart:", err);
+        // If retrieval fails (e.g., invalid ID), proceed to create new
+        cartId = null;
+      }
+    }
+
+    // Create new cart if none exists or retrieval failed
     if (!cart) {
       const region = await getRegion("us"); // fallback — adjust if needed
       if (!region) throw new Error("No region found");
-
-      const { cart: newCart } = await sdk.store.cart.create({ region_id: region.id }, headers as any);
+      const { cart: newCart } = await sdk.store.cart.create(
+        { region_id: region.id },
+        undefined, // query
+        cartHeaders // headers last
+      );
       cart = newCart;
       await setCartId(cart.id);
     }
@@ -96,11 +112,16 @@ export async function addBundleToCartAction(bundleItems: BundleItem[]) {
     // CLEAR ALL EXISTING LINE ITEMS
     if (cart.items && cart.items.length > 0) {
       for (const item of cart.items) {
-        await sdk.store.cart.deleteLineItem(cart.id, item.id, headers as any);
+        await sdk.store.cart.deleteLineItem(
+          cart.id,
+          item.id,
+          undefined, // query
+          cartHeaders // headers last
+        );
       }
     }
 
-    // ADD BUNDLE ITEMS — CORRECT METHOD NAME
+    // ADD BUNDLE ITEMS
     for (const item of bundleItems) {
       await sdk.store.cart.createLineItem(
         cart.id,
@@ -108,7 +129,8 @@ export async function addBundleToCartAction(bundleItems: BundleItem[]) {
           variant_id: item.variant_id,
           quantity: item.quantity,
         },
-        headers as any
+        undefined, // query
+        cartHeaders // headers last
       );
     }
 
