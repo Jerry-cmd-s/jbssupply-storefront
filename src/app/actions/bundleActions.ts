@@ -3,12 +3,17 @@
 
 import { v4 as uuidv4 } from "uuid";
 import { sdk } from "@lib/config";
-import { getAuthHeaders } from "@lib/data/cookies";
+import { getAuthHeaders,getCacheTag } from "@lib/data/cookies";
 import { revalidatePath } from "next/cache";
 import { getRegion } from "lib/data/regions";
 import { getCartId,setCartId, } from "@lib/data/cookies";
 const MEDUSA_URL = "https://jbssupply.medusajs.app";
 import type { BundleItem } from "types/bundle";
+import { HttpTypes } from "@medusajs/types";
+import { revalidateTag } from "next/cache";
+
+
+
 
 
 
@@ -74,38 +79,50 @@ export async function getSavedBundlesAction() {
 
 
 
-
 export async function addBundleToCartAction(bundleItems: BundleItem[]) {
-  const headers = await getAuthHeaders(); // Assumes this returns { Authorization: 'Bearer ...' } or similar flat object
+  const headers = await getAuthHeaders();
 
   try {
     // Get existing cart ID from cookies
     let cartId = await getCartId();
-    console.log("Fetched cartId:", cartId, typeof cartId); // Debug log
-    let cart;
+    console.log("Fetched cartId:", cartId, typeof cartId); // Debug: Check server logs
+    let cart: HttpTypes.StoreCart | null = null;
 
-    if (cartId && typeof cartId === 'string' && cartId.trim() !== '' && cartId !== 'undefined') {
+    if (cartId && typeof cartId === "string" && cartId.trim() !== "" && cartId !== "undefined") {
       try {
-        // Retrieve existing cart (id, query=undefined, headers)
-        cart = await sdk.store.cart.retrieve(cartId, undefined, headers);
+        // Retrieve existing cart (matching your retrieveCart style)
+        const { cart: retrievedCart } = await sdk.store.cart.retrieve(cartId, {}, headers);
+        cart = retrievedCart;
+        console.log("Retrieved cart successfully:", cart.id); // Debug
       } catch (err) {
         console.error("Failed to retrieve existing cart:", err);
-        // Proceed to create new if retrieval fails
+        // Reset invalid cookie to prevent repeat issues
+        cookies().delete("_medusa_cart_id"); // Adjust cookie name if different (e.g., 'cart_id')
+        cartId = undefined; // Force creation
       }
     }
 
-    // Create new cart if none exists or retrieval failed
+    // Create new cart if none exists or retrieval failed (similar to getOrSetCart)
     if (!cart) {
-      const region = await getRegion("us"); // fallback — adjust if needed
+      const region = await getRegion("us"); // Fallback; make dynamic if needed (e.g., pass countryCode)
       if (!region) throw new Error("No region found");
       const { cart: newCart } = await sdk.store.cart.create(
         { region_id: region.id },
-        undefined, // query
-        headers // headers last
+        {}, // Empty query
+        headers
       );
       cart = newCart;
       await setCartId(cart.id);
+      console.log("Created new cart:", cart.id); // Debug
     }
+
+    // OPTIONAL: Pre-check inventory for bundle items (uncomment to enable; requires fetching variants)
+    // for (const item of bundleItems) {
+    //   const { variant } = await sdk.store.product.retrieveVariant(/* product_id if needed */, item.variant_id);
+    //   if (variant.manage_inventory && variant.inventory_quantity < item.quantity) {
+    //     throw new Error(`Insufficient inventory for variant ${item.variant_id}`);
+    //   }
+    // }
 
     // CLEAR ALL EXISTING LINE ITEMS
     if (cart.items && cart.items.length > 0) {
@@ -113,10 +130,14 @@ export async function addBundleToCartAction(bundleItems: BundleItem[]) {
         await sdk.store.cart.deleteLineItem(
           cart.id,
           item.id,
-          undefined, // query
-          headers // headers last
+          {}, // Empty query
+          headers
         );
       }
+      console.log("Cleared existing items"); // Debug
+      // Re-fetch cart to get updated items (Medusa might not auto-update in response)
+      const { cart: updatedCart } = await sdk.store.cart.retrieve(cart.id, {}, headers);
+      cart = updatedCart;
     }
 
     // ADD BUNDLE ITEMS
@@ -127,15 +148,17 @@ export async function addBundleToCartAction(bundleItems: BundleItem[]) {
           variant_id: item.variant_id,
           quantity: item.quantity,
         },
-        undefined, // query
-        headers // headers last
+        {}, // Empty query
+        headers
       );
     }
+    console.log("Added bundle items successfully"); // Debug
 
-    // Optionally re-fetch cart to confirm updates
-    cart = await sdk.store.cart.retrieve(cart.id, undefined, headers);
+    // Re-fetch final cart to confirm (optional, but ensures consistency)
+    const { cart: finalCart } = await sdk.store.cart.retrieve(cart.id, {}, headers);
+    cart = finalCart;
 
-    // Revalidate cache
+    // Revalidate cache (matching your code)
     const cartCacheTag = await getCacheTag("carts");
     revalidateTag(cartCacheTag);
     const fulfillmentCacheTag = await getCacheTag("fulfillment");
