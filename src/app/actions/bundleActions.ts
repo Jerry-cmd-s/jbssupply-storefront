@@ -77,60 +77,46 @@ export async function getSavedBundlesAction() {
 
 export async function addBundleToCartAction(bundleItems: BundleItem[]) {
   try {
-    let cartId = await getCartId();
+    let cartId = getCartId();
     let cart;
 
     // 1️⃣ Retrieve existing cart
     if (cartId) {
-      try {
-        const res = await sdk.store.cart.retrieve(cartId);
-        cart = res.cart;
-      } catch {
-        cartId = null;
-      }
+      const res = await sdk.store.carts.retrieve(cartId);
+      cart = res.cart;
     }
 
-    // 2️⃣ Create cart if missing
+    // 2️⃣ Create cart if none exists
     if (!cart) {
       const region = await getRegion("us");
       if (!region) throw new Error("Region not found");
 
-      const res = await sdk.store.cart.create({
+      const res = await sdk.store.carts.create({
         region_id: region.id,
       });
 
       cart = res.cart;
-      await setCartId(cart.id);
+      setCartId(cart.id);
     }
 
-    // 3️⃣ Clear existing line items
+    // 3️⃣ Clear existing items
     if (cart.items?.length) {
-      await Promise.all(
-        cart.items.map((item) =>
-          sdk.store.cart.lineItems.delete(cart.id, item.id)
-        )
-      );
+      for (const item of cart.items) {
+        await sdk.store.carts.lineItems.delete(cart.id, item.id);
+      }
     }
 
     // 4️⃣ Add bundle items
-    await Promise.all(
-      bundleItems.map((item) =>
-        sdk.store.cart.lineItems.create(cart.id, {
-          variant_id: item.variant_id,
-          quantity: item.quantity,
-        })
-      )
-    );
+    for (const item of bundleItems) {
+      await sdk.store.carts.lineItems.create(cart.id, {
+        variant_id: item.variant_id,
+        quantity: item.quantity,
+      });
+    }
 
-    return {
-      success: true,
-      cart_id: cart.id,
-    };
+    return { success: true };
   } catch (err: any) {
     console.error("Add bundle to cart failed:", err);
-    return {
-      success: false,
-      error: err.message ?? "Failed to add bundle to cart",
-    };
+    return { success: false, error: err.message };
   }
 }
