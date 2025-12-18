@@ -1,17 +1,17 @@
-// src/app/[countryCode]/(main)/account/@dashboard/bundles/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { sdk } from "@lib/config";
 import CreateBundleModal from "components/CreateBundleModal";
-import { getSavedBundlesAction } from "app/actions/bundleActions"; // <-- new import
-import { addBundleToCartAction } from 'app/actions/bundleActions';
+import { getSavedBundlesAction, addBundleToCartAction } from "app/actions/bundleActions";
+import { Package, Plus, Loader2, ShoppingCart, Pencil, Trash2 } from "lucide-react"; // Add lucide-react for icons (npm i lucide-react)
+
 /* ----------------------------- Types ----------------------------- */
 type Bundle = {
   id: string;
   name: string;
   created_at: string;
-  items: { quantity: number }[];
+  items: { quantity: number; variant_id: string }[]; // Enhanced type assuming BundleItem has variant_id
 };
 
 /* ----------------------------- Component ----------------------------- */
@@ -19,59 +19,79 @@ export default function MyBundlesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bundles, setBundles] = useState<Bundle[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null); // Track loading per bundle
 
   /* ----------------------------- Data Loading ----------------------------- */
   const loadBundles = async () => {
-  try {
-    setLoading(true);
-    const result = await getSavedBundlesAction(); // <-- server action call
-
-    if (result.success) {
-      setBundles(Array.isArray(result.bundles) ? result.bundles : []);
-    } else {
-      console.error("Failed to load bundles");
+    try {
+      setLoading(true);
+      const result = await getSavedBundlesAction();
+      if (result.success) {
+        setBundles(Array.isArray(result.bundles) ? result.bundles : []);
+      } else {
+        console.error("Failed to load bundles");
+        setBundles([]);
+      }
+    } catch (error) {
+      console.error("Failed to load bundles", error);
       setBundles([]);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Failed to load bundles", error);
-    setBundles([]);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   useEffect(() => {
     loadBundles();
   }, []);
 
+  const handleAddToCart = async (bundle: Bundle) => {
+    setIsAddingToCart(bundle.id);
+    try {
+      const result = await addBundleToCartAction(bundle.items);
+      if (result.success) {
+        alert("Your bundle is ready in the cart!"); // Replace with toast in production
+        window.location.href = "/cart";
+      } else {
+        alert(result.error || "Failed to load bundle");
+      }
+    } catch (error) {
+      alert("An unexpected error occurred");
+    } finally {
+      setIsAddingToCart(null);
+    }
+  };
+
   /* ----------------------------- UI ----------------------------- */
   return (
-    <div className="min-h-screen bg-gray-50 py-10">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
         {/* Header */}
-        <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-4xl font-bold text-gray-900">My Bundles</h1>
+        <div className="mb-12 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">My Bundles</h1>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="rounded-full bg-black px-8 py-4 text-lg font-bold text-white shadow-lg transition hover:bg-red-800"
+            className="flex items-center gap-2 rounded-full bg-black px-6 py-3 text-base font-semibold text-white shadow-md transition hover:bg-gray-800 sm:px-8 sm:py-4 sm:text-lg"
           >
-            + Create New Bundle
+            <Plus size={20} />
+            Create New Bundle
           </button>
         </div>
 
-        {/* Loading */}
+        {/* Loading State with Skeleton */}
         {loading && (
-          <div className="py-20 text-center text-gray-500">
-            Loading bundles…
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-64 animate-pulse rounded-2xl bg-white shadow-lg"></div>
+            ))}
           </div>
         )}
 
         {/* Empty State */}
         {!loading && bundles.length === 0 && (
-          <div className="py-24 text-center">
-            <div className="mx-auto mb-8 h-32 w-32 rounded-xl border-2 border-dashed bg-gray-200" />
-            <p className="text-2xl font-medium text-gray-600">No bundles yet</p>
-            <p className="mt-3 text-gray-500">
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <Package size={80} className="mb-6 text-gray-300" strokeWidth={1.5} />
+            <p className="text-xl font-medium text-gray-600 sm:text-2xl">No bundles yet</p>
+            <p className="mt-2 text-base text-gray-500 sm:text-lg">
               Create your first custom bundle using the button above.
             </p>
           </div>
@@ -79,63 +99,46 @@ export default function MyBundlesPage() {
 
         {/* Bundles Grid */}
         {!loading && bundles.length > 0 && (
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {bundles.map((bundle) => (
               <div
                 key={bundle.id}
-                className="rounded-2xl bg-white p-8 shadow-lg transition hover:shadow-xl"
+                className="flex flex-col justify-between rounded-2xl bg-white p-6 shadow-md transition-shadow hover:shadow-xl sm:p-8"
               >
-                <h3 className="text-2xl font-bold text-gray-800">
-                  {bundle.name}
-                </h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  Created {new Date(bundle.created_at).toLocaleDateString()}
-                </p>
-                <p className="mt-6 text-lg font-semibold text-gray-700">
-                  {bundle.items.length}{" "}
-                  {bundle.items.length === 1 ? "item" : "items"}
-                </p>
-                <div className="mt-8 space-y-3">
-               <div
-  key={bundle.id}
-  className="rounded-2xl bg-white p-8 shadow-lg transition hover:shadow-xl"
->
-  <h3 className="text-2xl font-bold text-gray-800">{bundle.name}</h3>
-  <p className="mt-2 text-sm text-gray-500">
-    Created {new Date(bundle.created_at).toLocaleDateString()}
-  </p>
-  <p className="mt-6 text-lg font-semibold text-gray-700">
-    {bundle.items.length} {bundle.items.length === 1 ? "item" : "items"}
-  </p>
-  <div className="mt-8 space-y-3">
-    <button
-      onClick={async () => {
-        const result = await addBundleToCartAction(bundle.items);
-        if (result.success) {
-          alert("Your bundle is ready in the cart!");
-          window.location.href = "/cart";
-        } else {
-          alert(result.error || "Failed to load bundle");
-        }
-      }}
-      className="w-full rounded-lg bg-blue-600 py-3 font-medium text-white hover:bg-blue-700 transition"
-    >
-      Load My Bundle & Go to Cart
-    </button>
-    <button
-      disabled
-      className="w-full rounded-lg border border-gray-300 py-3 opacity-60"
-    >
-      Edit (coming soon)
-    </button>
-  </div>
-</div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800 sm:text-2xl">{bundle.name}</h3>
+                  <p className="mt-2 text-sm text-gray-500">
+                    Created {new Date(bundle.created_at).toLocaleDateString()}
+                  </p>
+                  <p className="mt-4 text-base font-semibold text-gray-700 sm:mt-6 sm:text-lg">
+                    {bundle.items.length} {bundle.items.length === 1 ? "item" : "items"}
+                  </p>
+                </div>
+                <div className="mt-6 space-y-3 sm:mt-8">
+                  <button
+                    onClick={() => handleAddToCart(bundle)}
+                    disabled={!!isAddingToCart}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 sm:text-base"
+                  >
+                    {isAddingToCart === bundle.id ? (
+                      <Loader2 size={18} className="animate-spin" />
+                    ) : (
+                      <ShoppingCart size={18} />
+                    )}
+                    Load Bundle & Go to Cart
+                  </button>
                   <button
                     disabled
-                    className="w-full rounded-lg border border-gray-300 py-3 opacity-60"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-600 opacity-60 sm:text-base"
                   >
+                    <Pencil size={18} />
                     Edit (coming soon)
                   </button>
+                  {/* Optional: Add delete if you implement a delete action */}
+                  {/* <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-red-300 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 sm:text-base">
+                    <Trash2 size={18} />
+                    Delete
+                  </button> */}
                 </div>
               </div>
             ))}
@@ -148,9 +151,8 @@ export default function MyBundlesPage() {
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
-          loadBundles(); // Refresh the list after saving
+          loadBundles(); // Refresh after saving
         }}
-       // sdk={sdk}
       />
     </div>
   );
