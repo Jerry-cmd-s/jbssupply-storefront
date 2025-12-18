@@ -6,6 +6,7 @@ import { sdk } from "@lib/config";
 import { getAuthHeaders } from "@lib/data/cookies";
 import { revalidatePath } from "next/cache";
 import { getRegion } from "lib/data/regions";
+import { getCartId,setCartId, } from "@lib/data/cookies";
 type BundleItem = {
   product_id: string;
   variant_id: string;
