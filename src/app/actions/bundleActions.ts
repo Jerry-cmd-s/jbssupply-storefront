@@ -1,20 +1,11 @@
 // src/app/actions/bundleActions.ts
 "use server";
-import { HttpTypes } from "@medusajs/types"
+
 import { v4 as uuidv4 } from "uuid";
 import { sdk } from "@lib/config";
-//import { getAuthHeaders } from "@lib/data/cookies";
+import { getAuthHeaders } from "@lib/data/cookies";
 import { revalidatePath } from "next/cache";
-import { getCacheTag } from "@lib/data/cookies"; // Added to match your cart page cache revalidation
-import {
-  getAuthHeaders,
-  getCacheOptions,
- // getCacheTag,
-  getCartId,
-  removeCartId,
-  setCartId,
-} from "@lib/data/cookies"
-//import { getRegion } from "./regions"
+
 type BundleItem = {
   product_id: string;
   variant_id: string;
@@ -28,10 +19,13 @@ type Bundle = {
   created_at: string;
 };
 
-/* Save a new bundle to customer metadata */
 export async function saveBundleAction(name: string, items: BundleItem[]) {
+  const headers = await getAuthHeaders();
+
   try {
-    const { customer } = await sdk.store.customer.retrieve();
+    const { customer } = await sdk.client.fetch("/store/customers/me", {
+      headers,
+    });
 
     if (!customer) {
       return { success: false, error: "No logged-in customer" };
@@ -46,10 +40,14 @@ export async function saveBundleAction(name: string, items: BundleItem[]) {
       created_at: new Date().toISOString(),
     };
 
-    await sdk.store.customer.update({
-      metadata: {
-        ...customer.metadata,
-        bundles: [...existingBundles, newBundle],
+    await sdk.client.fetch("/store/customers/me", {
+      method: "POST",
+      headers,
+      body: {
+        metadata: {
+          ...customer.metadata,
+          bundles: [...existingBundles, newBundle],
+        },
       },
     });
 
@@ -61,59 +59,65 @@ export async function saveBundleAction(name: string, items: BundleItem[]) {
   }
 }
 
-/* Load saved bundles from customer metadata */
 export async function getSavedBundlesAction() {
+  const headers = await getAuthHeaders();
+
   try {
-    const { customer } = await sdk.store.customer.retrieve();
+    const { customer } = await sdk.client.fetch("/store/customers/me", {
+      headers,
+    });
+
     return { success: true, bundles: (customer?.metadata?.bundles as Bundle[]) || [] };
   } catch (err) {
     console.error("Load bundles action failed:", err);
     return { success: false, bundles: [] };
   }
 }
-/* Add bundle to cart — clears current cart first, then adds bundle items, then refreshes cache */
+
 export async function addBundleToCartAction(bundleItems: BundleItem[]) {
   const headers = await getAuthHeaders();
 
   try {
     // Get or create cart
-    let cart = await sdk.store.cart.retrieve(undefined, headers as any);
+    let cart = await sdk.store.cart.retrieve(undefined, undefined, headers);
 
     if (!cart) {
-      // Create new cart (fallback region ID — adjust if needed)
-      const { cart: newCart } = await sdk.store.cart.create({ region_id: "reg_01" }, headers as any);
+      const region = await getRegion("us"); // fallback — adjust if needed
+      if (!region) throw new Error("No region found");
+
+      const { cart: newCart } = await sdk.store.cart.create({ region_id: region.id }, undefined, headers);
       cart = newCart;
       await setCartId(cart.id);
     }
 
-    // Clear all existing line items
+    // CLEAR ALL EXISTING LINE ITEMS
     if (cart.items && cart.items.length > 0) {
       for (const item of cart.items) {
-        await sdk.store.cart.deleteLineItem(cart.id, item.id, headers as any);
+        await sdk.store.cart.lineItems.delete(cart.id, item.id, headers);
       }
     }
 
-    // Add bundle items
+    // ADD BUNDLE ITEMS
     for (const item of bundleItems) {
-      await sdk.store.cart.createLineItem(
+      await sdk.store.cart.lineItems.create(
         cart.id,
         {
           variant_id: item.variant_id,
           quantity: item.quantity,
         },
-        headers as any
+        headers
       );
     }
 
-    // Revalidate cache (matching your cart page)
+    // Revalidate cache
     const cartCacheTag = await getCacheTag("carts");
     revalidateTag(cartCacheTag);
     const fulfillmentCacheTag = await getCacheTag("fulfillment");
     revalidateTag(fulfillmentCacheTag);
 
-    return { success: true, message: "Bundle added to cart successfully!" };
+    return { success: true, message: "Bundle loaded into cart!" };
   } catch (err: any) {
     console.error("Add bundle to cart failed:", err);
-    return { success: false, error: err.message || "Failed to add bundle to cart" };
+    return { success: false, error: err.message || "Failed to load bundle into cart" };
   }
 }
