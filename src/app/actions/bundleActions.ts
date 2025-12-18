@@ -75,10 +75,8 @@ export async function getSavedBundlesAction() {
 
 
 
-
 export async function addBundleToCartAction(bundleItems: BundleItem[]) {
-  const headers = await getAuthHeaders();
-  const cartConfig = { headers }; // Wrap headers in config object
+  const headers = await getAuthHeaders(); // Assumes this returns { Authorization: 'Bearer ...' } or similar flat object
 
   try {
     // Get existing cart ID from cookies
@@ -88,8 +86,8 @@ export async function addBundleToCartAction(bundleItems: BundleItem[]) {
 
     if (cartId && typeof cartId === 'string' && cartId.trim() !== '' && cartId !== 'undefined') {
       try {
-        // Retrieve existing cart (cartId first, then config)
-        cart = await sdk.store.cart.retrieve(cartId, cartConfig);
+        // Retrieve existing cart (id, query=undefined, headers)
+        cart = await sdk.store.cart.retrieve(cartId, undefined, headers);
       } catch (err) {
         console.error("Failed to retrieve existing cart:", err);
         // Proceed to create new if retrieval fails
@@ -102,7 +100,8 @@ export async function addBundleToCartAction(bundleItems: BundleItem[]) {
       if (!region) throw new Error("No region found");
       const { cart: newCart } = await sdk.store.cart.create(
         { region_id: region.id },
-        cartConfig // config last
+        undefined, // query
+        headers // headers last
       );
       cart = newCart;
       await setCartId(cart.id);
@@ -114,7 +113,8 @@ export async function addBundleToCartAction(bundleItems: BundleItem[]) {
         await sdk.store.cart.deleteLineItem(
           cart.id,
           item.id,
-          cartConfig // config last
+          undefined, // query
+          headers // headers last
         );
       }
     }
@@ -127,12 +127,13 @@ export async function addBundleToCartAction(bundleItems: BundleItem[]) {
           variant_id: item.variant_id,
           quantity: item.quantity,
         },
-        cartConfig // config last
+        undefined, // query
+        headers // headers last
       );
     }
 
     // Optionally re-fetch cart to confirm updates
-    cart = await sdk.store.cart.retrieve(cart.id, cartConfig);
+    cart = await sdk.store.cart.retrieve(cart.id, undefined, headers);
 
     // Revalidate cache
     const cartCacheTag = await getCacheTag("carts");
