@@ -7,18 +7,10 @@ import { getAuthHeaders } from "@lib/data/cookies";
 import { revalidatePath } from "next/cache";
 import { getRegion } from "lib/data/regions";
 import { getCartId,setCartId, } from "@lib/data/cookies";
-type BundleItem = {
-  product_id: string;
-  variant_id: string;
-  quantity: number;
-};
+const MEDUSA_URL = "https://jbssupply.medusajs.app";
+import type { BundleItem } from "types/bundle";
 
-type Bundle = {
-  id: string;
-  name: string;
-  items: BundleItem[];
-  created_at: string;
-};
+
 
 export async function saveBundleAction(name: string, items: BundleItem[]) {
   const headers = await getAuthHeaders();
