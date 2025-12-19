@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import { sdk } from "@lib/config";
 import CreateBundleModal from "components/CreateBundleModal";
 import { getSavedBundlesAction, addBundleToCartAction } from "app/actions/bundleActions";
-import { Package, Plus, Loader2, ShoppingCart, Pencil } from "lucide-react";
+import { Package, Plus, Loader2, ShoppingCart, Pencil, Calendar, Package2 } from "lucide-react";
 
-/* ----------------------------- Types ----------------------------- */
 type Bundle = {
   id: string;
   name: string;
@@ -14,14 +13,12 @@ type Bundle = {
   items: { quantity: number; variant_id: string }[];
 };
 
-/* ----------------------------- Component ----------------------------- */
 export default function MyBundlesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bundles, setBundles] = useState<Bundle[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
 
-  /* ----------------------------- Data Loading ----------------------------- */
   const loadBundles = async () => {
     try {
       setLoading(true);
@@ -61,7 +58,6 @@ export default function MyBundlesPage() {
     }
   };
 
-  /* ----------------------------- UI ----------------------------- */
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -79,9 +75,9 @@ export default function MyBundlesPage() {
 
         {/* Loading State */}
         {loading && (
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="h-64 animate-pulse rounded-2xl bg-white shadow-md"></div>
+          <div className="space-y-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-48 animate-pulse rounded-2xl bg-white shadow-md"></div>
             ))}
           </div>
         )}
@@ -97,41 +93,63 @@ export default function MyBundlesPage() {
           </div>
         )}
 
-        {/* Bundles Grid - More columns for larger screens to better fill space */}
+        {/* Horizontal Bundle List */}
         {!loading && bundles.length > 0 && (
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+          <div className="space-y-6">
             {bundles.map((bundle) => (
               <div
                 key={bundle.id}
-                className="flex min-h-64 flex-col justify-between rounded-2xl bg-white p-6 shadow-md transition-shadow hover:shadow-xl sm:p-8"
+                className="flex flex-col rounded-2xl bg-white p-6 shadow-md transition-shadow hover:shadow-xl sm:p-8 md:flex-row md:items-center md:justify-between md:gap-8"
               >
-                <div className="flex flex-col items-center text-center">
-                  <h3 className="text-xl font-bold text-gray-800 sm:text-2xl">{bundle.name}</h3>
-                  <p className="mt-2 text-sm text-gray-500">
-                    Created {new Date(bundle.created_at).toLocaleDateString()}
-                  </p>
-                  <p className="mt-4 text-base font-semibold text-gray-700 sm:mt-6 sm:text-lg">
-                    {bundle.items.length} {bundle.items.length === 1 ? "item" : "items"}
-                  </p>
+                {/* Left: Bundle Info */}
+                <div className="flex-1">
+                  <div className="flex items-start gap-4">
+                    <div className="hidden sm:block">
+                      <Package2 size={48} className="text-gray-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold text-gray-900 sm:text-3xl">
+                        {bundle.name}
+                      </h3>
+                      <div className="mt-3 flex flex-wrap items-center gap-6 text-sm text-gray-600 sm:text-base">
+                        <div className="flex items-center gap-2">
+                          <Calendar size={18} />
+                          <span>Created {new Date(bundle.created_at).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Package2 size={18} />
+                          <span className="font-semibold text-gray-800">
+                            {bundle.items.length} {bundle.items.length === 1 ? "item" : "items"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="mt-6 space-y-3 sm:mt-8">
+
+                {/* Right: Actions */}
+                <div className="mt-6 flex flex-col gap-3 sm:mt-0 sm:flex-row">
                   <button
                     onClick={() => handleAddToCart(bundle)}
                     disabled={!!isAddingToCart}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-4 text-base font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isAddingToCart === bundle.id ? (
-                      <Loader2 size={18} className="animate-spin" />
+                      <Loader2 size={20} className="animate-spin" />
                     ) : (
-                      <ShoppingCart size={18} />
+                      <ShoppingCart size={20} />
                     )}
-                    Load Bundle &amp; Go to Cart
+                    Load Bundle & Go to Cart
                   </button>
                   <button
                     disabled
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-600 opacity-60"
+                    className="flex items-center justify-center gap-2 rounded-lg border border-gray-300 px-6 py-4 text-base font-medium text-gray-600 opacity-60"
                   >
-                    <Pencil size={18} />
+                    <Pencil size={20} />
                     Edit (coming soon)
                   </button>
                 </div>
