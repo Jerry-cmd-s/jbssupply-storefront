@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import { sdk } from "@lib/config";
 import CreateBundleModal from "components/CreateBundleModal";
 import { getSavedBundlesAction, addBundleToCartAction } from "app/actions/bundleActions";
-import { Package, Plus, Loader2, ShoppingCart, Pencil, Trash2 } from "lucide-react"; // Add lucide-react for icons (npm i lucide-react)
+import { Package, Plus, Loader2, ShoppingCart, Pencil } from "lucide-react";
 
 /* ----------------------------- Types ----------------------------- */
 type Bundle = {
   id: string;
   name: string;
   created_at: string;
-  items: { quantity: number; variant_id: string }[]; // Enhanced type assuming BundleItem has variant_id
+  items: { quantity: number; variant_id: string }[];
 };
 
 /* ----------------------------- Component ----------------------------- */
@@ -19,7 +19,7 @@ export default function MyBundlesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bundles, setBundles] = useState<Bundle[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null); // Track loading per bundle
+  const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
 
   /* ----------------------------- Data Loading ----------------------------- */
   const loadBundles = async () => {
@@ -49,7 +49,7 @@ export default function MyBundlesPage() {
     try {
       const result = await addBundleToCartAction(bundle.items);
       if (result.success) {
-        alert("Your bundle is ready in the cart!"); // Replace with toast in production
+        alert("Your bundle is ready in the cart!");
         window.location.href = "/cart";
       } else {
         alert(result.error || "Failed to load bundle");
@@ -77,11 +77,11 @@ export default function MyBundlesPage() {
           </button>
         </div>
 
-        {/* Loading State with Skeleton */}
+        {/* Loading State */}
         {loading && (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-64 animate-pulse rounded-2xl bg-white shadow-lg"></div>
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="h-64 animate-pulse rounded-2xl bg-white shadow-md"></div>
             ))}
           </div>
         )}
@@ -97,15 +97,15 @@ export default function MyBundlesPage() {
           </div>
         )}
 
-        {/* Bundles Grid */}
+        {/* Bundles Grid - More columns for larger screens to better fill space */}
         {!loading && bundles.length > 0 && (
-          <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
             {bundles.map((bundle) => (
               <div
                 key={bundle.id}
-                className="flex flex-col justify-between rounded-2xl bg-white p-6 shadow-md transition-shadow hover:shadow-xl sm:p-8"
+                className="flex min-h-64 flex-col justify-between rounded-2xl bg-white p-6 shadow-md transition-shadow hover:shadow-xl sm:p-8"
               >
-                <div>
+                <div className="flex flex-col items-center text-center">
                   <h3 className="text-xl font-bold text-gray-800 sm:text-2xl">{bundle.name}</h3>
                   <p className="mt-2 text-sm text-gray-500">
                     Created {new Date(bundle.created_at).toLocaleDateString()}
@@ -118,27 +118,22 @@ export default function MyBundlesPage() {
                   <button
                     onClick={() => handleAddToCart(bundle)}
                     disabled={!!isAddingToCart}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 sm:text-base"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isAddingToCart === bundle.id ? (
                       <Loader2 size={18} className="animate-spin" />
                     ) : (
                       <ShoppingCart size={18} />
                     )}
-                    Load Bundle & Go to Cart
+                    Load Bundle &amp; Go to Cart
                   </button>
                   <button
                     disabled
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-600 opacity-60 sm:text-base"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-600 opacity-60"
                   >
                     <Pencil size={18} />
                     Edit (coming soon)
                   </button>
-                  {/* Optional: Add delete if you implement a delete action */}
-                  {/* <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-red-300 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 sm:text-base">
-                    <Trash2 size={18} />
-                    Delete
-                  </button> */}
                 </div>
               </div>
             ))}
@@ -151,7 +146,7 @@ export default function MyBundlesPage() {
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
-          loadBundles(); // Refresh after saving
+          loadBundles();
         }}
       />
     </div>
