@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { sdk } from "@lib/config";
 import CreateBundleModal from "components/CreateBundleModal";
-import { getSavedBundlesAction, addBundleToCartAction } from "app/actions/bundleActions";
-import { Package, Plus, Loader2, ShoppingCart, Pencil, Calendar, Package2 } from "lucide-react";
+import { getSavedBundlesAction, addBundleToCartAction, updateBundleAction, deleteBundleAction } from "app/actions/bundleActions";
+import { Package, Plus, Loader2, ShoppingCart, Pencil, Calendar, Package2, Trash2 } from "lucide-react";
 
 type Bundle = {
   id: string;
@@ -15,9 +15,11 @@ type Bundle = {
 
 export default function MyBundlesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editBundle, setEditBundle] = useState<Bundle | null>(null);
   const [bundles, setBundles] = useState<Bundle[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   const loadBundles = async () => {
     try {
@@ -58,6 +60,24 @@ export default function MyBundlesPage() {
     }
   };
 
+  const handleDelete = async (bundleId: string) => {
+    if (!confirm("Are you sure you want to delete this bundle?")) return;
+    setIsDeleting(bundleId);
+    try {
+      const result = await deleteBundleAction(bundleId);
+      if (result.success) {
+        alert("Bundle deleted successfully!");
+        await loadBundles(); // Refresh list
+      } else {
+        alert(result.error || "Failed to delete bundle");
+      }
+    } catch (error) {
+      alert("An unexpected error occurred");
+    } finally {
+      setIsDeleting(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -65,7 +85,10 @@ export default function MyBundlesPage() {
         <div className="mb-12 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">My Bundles</h1>
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              setEditBundle(null);
+              setIsModalOpen(true);
+            }}
             className="flex items-center gap-2 rounded-full bg-black px-6 py-3 text-base font-semibold text-white shadow-md transition hover:bg-gray-800 sm:px-8 sm:py-4 sm:text-lg"
           >
             <Plus size={20} />
@@ -130,12 +153,11 @@ export default function MyBundlesPage() {
                     </div>
                   </div>
                 </div>
-
                 {/* Right: Actions */}
                 <div className="mt-6 flex flex-col gap-3 sm:mt-0 sm:flex-row">
                   <button
                     onClick={() => handleAddToCart(bundle)}
-                    disabled={!!isAddingToCart}
+                    disabled={!!isAddingToCart || isDeleting === bundle.id}
                     className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-4 text-base font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isAddingToCart === bundle.id ? (
@@ -146,11 +168,27 @@ export default function MyBundlesPage() {
                     Load Bundle & Go to Cart
                   </button>
                   <button
-                    disabled
-                    className="flex items-center justify-center gap-2 rounded-lg border border-gray-300 px-6 py-4 text-base font-medium text-gray-600 opacity-60"
+                    onClick={() => {
+                      setEditBundle(bundle);
+                      setIsModalOpen(true);
+                    }}
+                    disabled={isAddingToCart === bundle.id || isDeleting === bundle.id}
+                    className="flex items-center justify-center gap-2 rounded-lg bg-gray-200 px-6 py-4 text-base font-medium text-gray-800 transition hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <Pencil size={20} />
-                    Edit (coming soon)
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(bundle.id)}
+                    disabled={isAddingToCart === bundle.id || isDeleting === bundle.id}
+                    className="flex items-center justify-center gap-2 rounded-lg bg-red-100 px-6 py-4 text-base font-medium text-red-600 transition hover:bg-red-200 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isDeleting === bundle.id ? (
+                      <Loader2 size={20} className="animate-spin" />
+                    ) : (
+                      <Trash2 size={20} />
+                    )}
+                    Delete
                   </button>
                 </div>
               </div>
@@ -158,7 +196,6 @@ export default function MyBundlesPage() {
           </div>
         )}
       </div>
-
       {/* Create Bundle Modal */}
       <CreateBundleModal
         isOpen={isModalOpen}
@@ -166,6 +203,7 @@ export default function MyBundlesPage() {
           setIsModalOpen(false);
           loadBundles();
         }}
+        bundle={editBundle ?? undefined}
       />
     </div>
   );

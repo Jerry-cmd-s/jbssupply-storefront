@@ -1,43 +1,42 @@
-// src/app/actions/bundleActions.ts
 "use server";
 
 import { v4 as uuidv4 } from "uuid";
 import { sdk } from "@lib/config";
-import { getAuthHeaders,getCacheTag } from "@lib/data/cookies";
+import { getAuthHeaders, getCacheTag } from "@lib/data/cookies";
 import { revalidatePath } from "next/cache";
 import { getRegion } from "lib/data/regions";
-import { getCartId,setCartId, } from "@lib/data/cookies";
-const MEDUSA_URL = "https://jbssupply.medusajs.app";
+import { getCartId, setCartId } from "@lib/data/cookies";
+import { cookies } from "next/headers"; // Added for cookies().delete
+import { revalidateTag } from "next/cache";
 import type { BundleItem } from "types/bundle";
 import { HttpTypes } from "@medusajs/types";
-import { revalidateTag } from "next/cache";
 
+const MEDUSA_URL = "https://jbssupply.medusajs.app"; // Unused but kept for reference
 
-
-
-
+// Define Bundle type for clarity (assuming it's not defined elsewhere)
+type Bundle = {
+  id: string;
+  name: string;
+  created_at: string;
+  items: BundleItem[];
+};
 
 export async function saveBundleAction(name: string, items: BundleItem[]) {
   const headers = await getAuthHeaders();
-
   try {
     const { customer } = await sdk.client.fetch("/store/customers/me", {
       headers,
     });
-
     if (!customer) {
       return { success: false, error: "No logged-in customer" };
     }
-
     const existingBundles: Bundle[] = (customer.metadata?.bundles as Bundle[]) || [];
-
     const newBundle: Bundle = {
       id: uuidv4(),
       name: name.trim(),
       items,
       created_at: new Date().toISOString(),
     };
-
     await sdk.client.fetch("/store/customers/me", {
       method: "POST",
       headers,
@@ -48,7 +47,6 @@ export async function saveBundleAction(name: string, items: BundleItem[]) {
         },
       },
     });
-
     revalidatePath("/account/bundles");
     return { success: true, bundle: newBundle };
   } catch (err: any) {
@@ -57,18 +55,12 @@ export async function saveBundleAction(name: string, items: BundleItem[]) {
   }
 }
 
-
-
-
-
 export async function getSavedBundlesAction() {
   const headers = await getAuthHeaders();
-
   try {
     const { customer } = await sdk.client.fetch("/store/customers/me", {
       headers,
     });
-
     return { success: true, bundles: (customer?.metadata?.bundles as Bundle[]) || [] };
   } catch (err) {
     console.error("Load bundles action failed:", err);
@@ -76,12 +68,76 @@ export async function getSavedBundlesAction() {
   }
 }
 
+export async function updateBundleAction(bundleId: string, name: string, items: BundleItem[]) {
+  const headers = await getAuthHeaders();
+  try {
+    const { customer } = await sdk.client.fetch("/store/customers/me", {
+      headers,
+    });
+    if (!customer) {
+      return { success: false, error: "No logged-in customer" };
+    }
+    const existingBundles: Bundle[] = (customer.metadata?.bundles as Bundle[]) || [];
+    const updatedBundles = existingBundles.map((bundle) =>
+      bundle.id === bundleId
+        ? { ...bundle, name: name.trim(), items, updated_at: new Date().toISOString() } // Optional: add updated_at if desired
+        : bundle
+    );
+    if (!updatedBundles.find((b) => b.id === bundleId)) {
+      return { success: false, error: "Bundle not found" };
+    }
+    await sdk.client.fetch("/store/customers/me", {
+      method: "POST",
+      headers,
+      body: {
+        metadata: {
+          ...customer.metadata,
+          bundles: updatedBundles,
+        },
+      },
+    });
+    revalidatePath("/account/bundles");
+    return { success: true, bundle: updatedBundles.find((b) => b.id === bundleId) };
+  } catch (err: any) {
+    console.error("Update bundle action failed:", err);
+    return { success: false, error: err.message || "Failed to update bundle" };
+  }
+}
 
-
+export async function deleteBundleAction(bundleId: string) {
+  const headers = await getAuthHeaders();
+  try {
+    const { customer } = await sdk.client.fetch("/store/customers/me", {
+      headers,
+    });
+    if (!customer) {
+      return { success: false, error: "No logged-in customer" };
+    }
+    const existingBundles: Bundle[] = (customer.metadata?.bundles as Bundle[]) || [];
+    const updatedBundles = existingBundles.filter((bundle) => bundle.id !== bundleId);
+    if (existingBundles.length === updatedBundles.length) {
+      return { success: false, error: "Bundle not found" };
+    }
+    await sdk.client.fetch("/store/customers/me", {
+      method: "POST",
+      headers,
+      body: {
+        metadata: {
+          ...customer.metadata,
+          bundles: updatedBundles,
+        },
+      },
+    });
+    revalidatePath("/account/bundles");
+    return { success: true };
+  } catch (err: any) {
+    console.error("Delete bundle action failed:", err);
+    return { success: false, error: err.message || "Failed to delete bundle" };
+  }
+}
 
 export async function addBundleToCartAction(bundleItems: BundleItem[]) {
   const headers = await getAuthHeaders();
-
   try {
     // Get existing cart ID from cookies
     let cartId = await getCartId();
