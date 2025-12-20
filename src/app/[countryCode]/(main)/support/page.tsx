@@ -34,7 +34,7 @@ export default function SupportPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-16 px-4">
+    <div className="min-h-screen  py-16 px-4">
       <div className="mx-auto w-full max-w-5xl">
         {/* Header */}
         <div className="mb-12 text-center">

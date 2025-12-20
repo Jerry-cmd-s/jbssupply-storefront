@@ -66,7 +66,12 @@ export default async function Nav() {
                 </div>
               </div>
             </div>
-
+ <LocalizedClientLink
+                    href="/product-request"
+                    className="block px-4 py-3 text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    Products Request ?
+                  </LocalizedClientLink>
 
             <LocalizedClientLink
               className="hidden small:inline-block text-sm font-medium text-ui-fg-subtle hover:text-ui-fg-base transition-colors px-2 py-1"
