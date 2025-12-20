@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { X } from "lucide-react";
 import { HttpTypes } from "@medusajs/types";
 import { sdk } from "@lib/config";
 import { getPricesForVariant } from "@lib/util/get-product-price";
 import { saveBundleAction } from "app/actions/bundleActions";
-const [searchQuery, setSearchQuery] = useState("");
+
+/* ---------------- TYPES ---------------- */
 
 type BundleItem = {
   product_id: string;
@@ -19,19 +20,22 @@ type Props = {
   onClose: () => void;
 };
 
+/* ---------------- COMPONENT ---------------- */
+
 export default function CreateBundleModal({ isOpen, onClose }: Props) {
+  /* ---------- STATE ---------- */
   const [products, setProducts] = useState<HttpTypes.StoreProduct[]>([]);
   const [selected, setSelected] = useState<BundleItem[]>([]);
   const [bundleName, setBundleName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  /**
-   * Load products when modal opens
-   */
+  /* ---------- LOAD PRODUCTS ---------- */
   useEffect(() => {
     if (!isOpen) {
       setSelected([]);
       setBundleName("");
+      setSearchQuery("");
       return;
     }
 
@@ -58,29 +62,27 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
     fetchProducts();
   }, [isOpen]);
 
-////////////////////////////////////////////////////////////////////////////////////
-  const filteredProducts = products.filter((product) => {
-  if (!searchQuery.trim()) return true;
+  /* ---------- SEARCH (MEMOIZED) ---------- */
+  const filteredProducts = useMemo(() => {
+    if (!searchQuery.trim()) return products;
 
-  const q = searchQuery.toLowerCase();
+    const q = searchQuery.toLowerCase();
 
-  return (
-    product.title.toLowerCase().includes(q) ||
-    product.variants?.some((v) =>
-      v.title?.toLowerCase().includes(q)
-    )
-  );
-});
+    return products.filter((product) => {
+      return (
+        product.title.toLowerCase().includes(q) ||
+        product.variants?.some((v) =>
+          v.title?.toLowerCase().includes(q)
+        )
+      );
+    });
+  }, [products, searchQuery]);
 
-///////////////////////////////////////////////////////////////////////////////////
-  /**
-   * 
-   * 
-   * Add or increment item
-   */
+  /* ---------- ADD / INCREMENT ---------- */
   const toggleItem = (product: HttpTypes.StoreProduct, variantId: string) => {
     setSelected((prev) => {
       const existing = prev.find((i) => i.variant_id === variantId);
+
       if (existing) {
         return prev.map((i) =>
           i.variant_id === variantId
@@ -100,9 +102,7 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
     });
   };
 
-  /**
-   * Update quantity
-   */
+  /* ---------- UPDATE QTY ---------- */
   const updateQty = (variantId: string, delta: number) => {
     setSelected((prev) =>
       prev
@@ -115,9 +115,7 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
     );
   };
 
-  /**
-   * Save bundle
-   */
+  /* ---------- SAVE BUNDLE ---------- */
   const handleSave = async () => {
     if (!bundleName.trim()) {
       alert("Please enter a bundle name");
@@ -143,6 +141,7 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
 
   if (!isOpen) return null;
 
+  /* ---------- RENDER ---------- */
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3">
       <div className="w-full max-w-7xl max-h-[92vh] overflow-hidden rounded-3xl bg-white shadow-2xl">
@@ -158,28 +157,25 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
         </div>
 
         <div className="flex h-full max-h-[calc(92vh-72px)] flex-col md:flex-row">
-          {/* Product Grid */}
+          {/* PRODUCT GRID */}
           <div className="flex-1 overflow-y-auto p-6">
             <h3 className="mb-5 text-lg font-semibold">
-              Choose Products ({products.length})
+              Choose Products ({filteredProducts.length})
             </h3>
 
-<div className="mb-5">
-  <input
-    type="text"
-    value={searchQuery}
-    onChange={(e) => setSearchQuery(e.target.value)}
-    placeholder="Search products by name…"
-    className="w-full rounded-xl border px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-black"
-  />
-</div>
-
-
-
+            {/* SEARCH */}
+            <div className="mb-5">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products by name or variant…"
+                className="w-full rounded-xl border px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-black"
+              />
+            </div>
 
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {filteredProducts.map((product) => {
-
                 const variant = product.variants![0];
                 const price = getPricesForVariant(variant);
                 const isAdded = selected.some(
@@ -190,13 +186,13 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
                   <div
                     key={product.id}
                     onClick={() => toggleItem(product, variant.id)}
-                    className={`cursor-pointer rounded-xl border-2 p-3 text-center transition hover:shadow-md ${
+                    className={`cursor-pointer rounded-xl border-2 p-3 text-center transition ${
                       isAdded
-                        ? "border-black bg-white"
+                        ? "border-black"
                         : "border-gray-200 hover:border-gray-400"
                     }`}
                   >
-                    {/* SQUARE THUMBNAIL */}
+                    {/* SQUARE IMAGE */}
                     <div className="mb-3 aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
                       {product.thumbnail ? (
                         <img
@@ -234,7 +230,7 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
             </div>
           </div>
 
-          {/* Bundle Preview */}
+          {/* PREVIEW */}
           <div className="w-full border-t bg-gray-50 p-6 md:w-96 md:border-l md:border-t-0">
             <h3 className="mb-4 text-lg font-semibold">Bundle Preview</h3>
 
