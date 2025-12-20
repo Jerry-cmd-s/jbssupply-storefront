@@ -6,6 +6,7 @@ import { HttpTypes } from "@medusajs/types";
 import { sdk } from "@lib/config";
 import { getPricesForVariant } from "@lib/util/get-product-price";
 import { saveBundleAction } from "app/actions/bundleActions";
+const [searchQuery, setSearchQuery] = useState("");
 
 type BundleItem = {
   product_id: string;
@@ -57,7 +58,24 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
     fetchProducts();
   }, [isOpen]);
 
+////////////////////////////////////////////////////////////////////////////////////
+  const filteredProducts = products.filter((product) => {
+  if (!searchQuery.trim()) return true;
+
+  const q = searchQuery.toLowerCase();
+
+  return (
+    product.title.toLowerCase().includes(q) ||
+    product.variants?.some((v) =>
+      v.title?.toLowerCase().includes(q)
+    )
+  );
+});
+
+///////////////////////////////////////////////////////////////////////////////////
   /**
+   * 
+   * 
    * Add or increment item
    */
   const toggleItem = (product: HttpTypes.StoreProduct, variantId: string) => {
@@ -146,8 +164,22 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
               Choose Products ({products.length})
             </h3>
 
+<div className="mb-5">
+  <input
+    type="text"
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)}
+    placeholder="Search products by name…"
+    className="w-full rounded-xl border px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-black"
+  />
+</div>
+
+
+
+
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-              {products.map((product) => {
+              {filteredProducts.map((product) => {
+
                 const variant = product.variants![0];
                 const price = getPricesForVariant(variant);
                 const isAdded = selected.some(
