@@ -70,7 +70,7 @@ export default async function Nav() {
                     href="/product-request"
                     className="block px-4 py-3 text-sm hover:bg-gray-50 transition-colors"
                   >
-                    Products Request ?
+                    Products Request
                   </LocalizedClientLink>
 
             <LocalizedClientLink
