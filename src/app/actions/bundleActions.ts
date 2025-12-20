@@ -78,14 +78,19 @@ export async function updateBundleAction(bundleId: string, name: string, items: 
       return { success: false, error: "No logged-in customer" };
     }
     const existingBundles: Bundle[] = (customer.metadata?.bundles as Bundle[]) || [];
+    console.log("Update: Existing bundle IDs:", existingBundles.map(b => b.id)); // Debug: List all current IDs
+    console.log("Update: Target bundleId:", bundleId); // Debug: Incoming ID
     const updatedBundles = existingBundles.map((bundle) =>
       bundle.id === bundleId
-        ? { ...bundle, name: name.trim(), items, updated_at: new Date().toISOString() } // Optional: add updated_at if desired
+        ? { ...bundle, name: name.trim(), items, updated_at: new Date().toISOString() }
         : bundle
     );
-    if (!updatedBundles.find((b) => b.id === bundleId)) {
+    const updatedBundle = updatedBundles.find((b) => b.id === bundleId);
+    if (!updatedBundle) {
+      console.log("Update: Bundle not found - no changes made"); // Debug: Confirm miss
       return { success: false, error: "Bundle not found" };
     }
+    console.log("Update: Found and updated bundle:", updatedBundle.id); // Debug: Confirm hit
     await sdk.client.fetch("/store/customers/me", {
       method: "POST",
       headers,
@@ -96,8 +101,11 @@ export async function updateBundleAction(bundleId: string, name: string, items: 
         },
       },
     });
+    // Optional: Re-fetch to confirm persistence
+    const { customer: updatedCustomer } = await sdk.client.fetch("/store/customers/me", { headers });
+    console.log("Update: Post-update bundles count:", (updatedCustomer.metadata?.bundles as Bundle[] || []).length); // Debug: Verify saved
     revalidatePath("/account/bundles");
-    return { success: true, bundle: updatedBundles.find((b) => b.id === bundleId) };
+    return { success: true, bundle: updatedBundle };
   } catch (err: any) {
     console.error("Update bundle action failed:", err);
     return { success: false, error: err.message || "Failed to update bundle" };
@@ -114,10 +122,14 @@ export async function deleteBundleAction(bundleId: string) {
       return { success: false, error: "No logged-in customer" };
     }
     const existingBundles: Bundle[] = (customer.metadata?.bundles as Bundle[]) || [];
+    console.log("Delete: Existing bundle IDs:", existingBundles.map(b => b.id)); // Debug: List all current IDs
+    console.log("Delete: Target bundleId:", bundleId); // Debug: Incoming ID
     const updatedBundles = existingBundles.filter((bundle) => bundle.id !== bundleId);
     if (existingBundles.length === updatedBundles.length) {
+      console.log("Delete: Bundle not found - no changes made"); // Debug: Confirm miss
       return { success: false, error: "Bundle not found" };
     }
+    console.log("Delete: Bundles count after filter:", updatedBundles.length); // Debug: Confirm removal
     await sdk.client.fetch("/store/customers/me", {
       method: "POST",
       headers,
@@ -128,6 +140,9 @@ export async function deleteBundleAction(bundleId: string) {
         },
       },
     });
+    // Optional: Re-fetch to confirm persistence
+    const { customer: updatedCustomer } = await sdk.client.fetch("/store/customers/me", { headers });
+    console.log("Delete: Post-delete bundles count:", (updatedCustomer.metadata?.bundles as Bundle[] || []).length); // Debug: Verify saved
     revalidatePath("/account/bundles");
     return { success: true };
   } catch (err: any) {
