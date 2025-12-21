@@ -15,14 +15,29 @@ export default async function Nav(): Promise<JSX.Element> {
     <div className="sticky top-0 inset-x-0 z-50 backdrop-blur-md bg-white/80 border-b border-ui-border-base">
       {/* 🔔 Announcement Banner */}
       <div className="w-full bg-black text-white text-sm overflow-hidden">
-        <div className="relative flex whitespace-nowrap">
-          <div className="animate-marquee py-2 px-4 font-medium tracking-wide">
-            🚚 Same-Day Delivery Available • 💳 Flexible Payment Plans • 🚚 Same-Day Delivery Available • 💳 Flexible Payment Plans •
-          </div>
-          <div className="animate-marquee py-2 px-4 font-medium tracking-wide absolute top-0 left-full">
-            🚚 Same-Day Delivery Available • 💳 Flexible Payment Plans • 🚚 Same-Day Delivery Available • 💳 Flexible Payment Plans •
-          </div>
-        </div>
+       {/* 🔔 Announcement Banner */}
+<div className="w-full bg-black text-white text-sm overflow-hidden">
+  <div className="relative flex">
+    <div className="banner-track py-2">
+      <span className="mx-6">
+        Same-Day Delivery Available
+      </span>
+      <span className="opacity-60">•</span>
+      <span className="mx-6">
+        Flexible Payment Plans
+      </span>
+      <span className="opacity-60">•</span>
+      <span className="mx-6">
+        Same-Day Delivery Available
+      </span>
+      <span className="opacity-60">•</span>
+      <span className="mx-6">
+        Flexible Payment Plans
+      </span>
+    </div>
+  </div>
+</div>
+
       </div>
 
       <header className="relative w-full h-16">
