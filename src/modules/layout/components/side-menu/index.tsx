@@ -27,6 +27,8 @@ const SideMenu = ({ regions }: { regions: HttpTypes.StoreRegion[] | null }) => {
         { name: "Cleaning", href: "/business/cleaning" },
       ],
     },
+    { name: "Product Request", href: "/product-request" },
+    { name: "Support", href: "/support" },
     { name: "Account", href: "/account" },
     { name: "Cart", href: "/cart" },
   ]

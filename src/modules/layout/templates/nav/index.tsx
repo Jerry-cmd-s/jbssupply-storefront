@@ -17,21 +17,15 @@ export default async function Nav(): Promise<JSX.Element> {
       <div className="w-full bg-black text-white text-sm overflow-hidden">
        {/* 🔔 Announcement Banner */}
 <div className="w-full bg-black text-white text-sm overflow-hidden">
-  <div className="relative flex">
-    <div className="banner-track py-2">
-      
-      <span className="opacity-60">•</span>
-      <span className="mx-6">
-        Flexible Payment Plans
-      </span>
-      <span className="opacity-60">•</span>
-      <span className="mx-6">
-        Same-Day Delivery Available
-      </span>
-     <span className="opacity-60">•</span>
-      
-    </div>
+ <div className="w-full bg-black text-white text-sm">
+  <div className="content-container-safe flex justify-center items-center py-2">
+    <span className="opacity-60 mx-3">•</span>
+    <span className="mx-3">Flexible Payment Plans</span>
+    <span className="opacity-60 mx-3">•</span>
+    <span className="mx-3">Same-Day Delivery Available</span>
+    <span className="opacity-60 mx-3">•</span>
   </div>
+</div>
 </div>
 
       </div>
