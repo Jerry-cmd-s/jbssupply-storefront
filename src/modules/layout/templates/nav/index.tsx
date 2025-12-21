@@ -6,119 +6,125 @@ import CartButton from "@modules/layout/components/cart-button"
 import SideMenu from "@modules/layout/components/side-menu"
 import Image from "next/image"
 
-export default async function Nav() {
-  const regions = await listRegions().then((regions: StoreRegion[]) => regions)
+export default async function Nav(): Promise<JSX.Element> {
+  const regions: StoreRegion[] = await listRegions().then(
+    (regions) => regions
+  )
 
   return (
-    <>
-      {/* Animated Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2.5 overflow-hidden relative shadow-md">
-        <div className="animate-marquee whitespace-nowrap inline-block">
-          <span className="mx-12 text-sm md:text-base font-semibold tracking-wide">
-            🚚 Same Day Delivery Available • 💳 Flexible Payment Plans
-          </span>
-          <span className="mx-12 text-sm md:text-base font-semibold tracking-wide">
-            🚚 Same Day Delivery Available • 💳 Flexible Payment Plans
-          </span>
+    <div className="sticky top-0 inset-x-0 z-50 backdrop-blur-md bg-white/80 border-b border-ui-border-base">
+      {/* 🔔 Announcement Banner */}
+      <div className="w-full bg-black text-white text-sm overflow-hidden">
+        <div className="relative flex whitespace-nowrap">
+          <div className="animate-marquee py-2 px-4 font-medium tracking-wide">
+            🚚 Same-Day Delivery Available • 💳 Flexible Payment Plans • 🚚 Same-Day Delivery Available • 💳 Flexible Payment Plans •
+          </div>
+          <div className="animate-marquee py-2 px-4 font-medium tracking-wide absolute top-0 left-full">
+            🚚 Same-Day Delivery Available • 💳 Flexible Payment Plans • 🚚 Same-Day Delivery Available • 💳 Flexible Payment Plans •
+          </div>
         </div>
       </div>
 
-      {/* Main Navigation */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex items-center justify-between h-20">
-            {/* Left: Menu + Logo */}
-            <div className="flex items-center gap-6">
+      <header className="relative w-full h-16">
+        <nav className="content-container-safe flex h-full items-center justify-between w-full">
+          {/* Left: Menu + Logo */}
+          <div className="flex items-center gap-4 h-full">
+            <div className="block md:hidden">
               <SideMenu regions={regions} />
-              <LocalizedClientLink href="/" className="flex items-center">
-                <Image
-                  src="/logo.png" // Replace with your actual logo path
-                  alt="Your Brand"
-                  width={140}
-                  height={40}
-                  className="object-contain"
-                />
-              </LocalizedClientLink>
             </div>
 
-            {/* Desktop Navigation Links */}
-            <div className="hidden lg:flex items-center gap-10 text-base font-medium">
-              <LocalizedClientLink href="/products" className="hover:text-blue-600 transition">
-                Products
-              </LocalizedClientLink>
+            <LocalizedClientLink href="/" data-testid="nav-store-link">
+              <Image
+                src="/jbssupply.png"
+                alt="JB's Supply Logo"
+                width={85}
+                height={61}
+                className="object-contain"
+                priority
+              />
+            </LocalizedClientLink>
+          </div>
 
-              <div className="relative group">
-                <button className="hover:text-blue-600 transition">Products for</button>
-                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-4 pt-2 hidden group-hover:block z-50">
-                  <div className="bg-white shadow-xl rounded-xl border border-gray-100 py-6 px-8 min-w-[220px] text-gray-800">
-                    <LocalizedClientLink
-                      href="/products/restaurants"
-                      className="block py-2 hover:text-blue-600 transition"
-                    >
-                      Restaurants
-                    </LocalizedClientLink>
-                    <LocalizedClientLink
-                      href="/products/spas"
-                      className="block py-2 hover:text-blue-600 transition"
-                    >
-                      Spas
-                    </LocalizedClientLink>
-                    <LocalizedClientLink
-                      href="/products/bars"
-                      className="block py-2 hover:text-blue-600 transition"
-                    >
-                      Bars
-                    </LocalizedClientLink>
-                    <LocalizedClientLink
-                      href="/products/cleaning"
-                      className="block py-2 hover:text-blue-600 transition"
-                    >
-                      Cleaning
-                    </LocalizedClientLink>
-                  </div>
+          {/* Right: Links + Cart */}
+          <div className="flex items-center gap-x-6 h-full">
+            {/* Products dropdown */}
+            <div className="relative group">
+              <button
+                type="button"
+                className="hidden small:inline-block text-sm font-medium text-ui-fg-subtle hover:text-ui-fg-base transition-colors px-2 py-1"
+              >
+                Products
+              </button>
+
+              <div className="absolute top-full left-0 pt-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 z-10">
+                <div className="bg-white border border-ui-border-base shadow-lg rounded-md min-w-[200px] overflow-hidden">
+                  <LocalizedClientLink
+                    href="/categories/restaurant-supplies"
+                    className="block px-4 py-3 text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    Products for Restaurants
+                  </LocalizedClientLink>
+
+                  <LocalizedClientLink
+                    href="/business/spas"
+                    className="block px-4 py-3 text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    Spas
+                  </LocalizedClientLink>
+
+                  <LocalizedClientLink
+                    href="/business/bars"
+                    className="block px-4 py-3 text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    Bars
+                  </LocalizedClientLink>
+
+                  <LocalizedClientLink
+                    href="/business/cleaning"
+                    className="block px-4 py-3 text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    Cleaning
+                  </LocalizedClientLink>
                 </div>
               </div>
-
-              <LocalizedClientLink href="/request" className="hover:text-blue-600 transition">
-                Products Request
-              </LocalizedClientLink>
-
-              <LocalizedClientLink href="/support" className="hover:text-blue-600 transition">
-                Support
-              </LocalizedClientLink>
-
-              <LocalizedClientLink href="/account" className="hover:text-blue-600 transition">
-                Account
-              </LocalizedClientLink>
-
-              <CartButton />
             </div>
 
-            {/* Mobile Cart (visible on small screens) */}
-            <div className="lg:hidden">
+            <LocalizedClientLink
+              href="/product-request"
+              className="hidden small:inline-block text-sm font-medium text-ui-fg-subtle hover:text-ui-fg-base transition-colors px-2 py-1"
+            >
+              Product Request
+            </LocalizedClientLink>
+
+            <LocalizedClientLink
+              href="/support"
+              className="hidden small:inline-block text-sm font-medium text-ui-fg-subtle hover:text-ui-fg-base transition-colors px-2 py-1"
+            >
+              Support
+            </LocalizedClientLink>
+
+            <LocalizedClientLink
+              href="/account"
+              className="hidden small:inline-block text-sm font-medium text-ui-fg-subtle hover:text-ui-fg-base transition-colors px-2 py-1"
+            >
+              Account
+            </LocalizedClientLink>
+
+            <Suspense
+              fallback={
+                <LocalizedClientLink
+                  href="/cart"
+                  className="hover:text-ui-fg-base flex items-center gap-2 text-sm font-medium transition-colors px-2 py-1"
+                >
+                  Cart (0)
+                </LocalizedClientLink>
+              }
+            >
               <CartButton />
-            </div>
-          </nav>
-        </div>
+            </Suspense>
+          </div>
+        </nav>
       </header>
-
-      {/* Global animation styles */}
-      <style jsx global>{`
-        @keyframes marquee {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
-        }
-        .animate-marquee {
-          animation: marquee 18s linear infinite;
-        }
-        .animate-marquee:hover {
-          animation-play-state: paused;
-        }
-      `}</style>
-    </>
+    </div>
   )
 }
