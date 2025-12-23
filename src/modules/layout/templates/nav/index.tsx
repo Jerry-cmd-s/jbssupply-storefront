@@ -6,28 +6,40 @@ import CartButton from "@modules/layout/components/cart-button"
 import SideMenu from "@modules/layout/components/side-menu"
 import Image from "next/image"
 
+const announcements = [
+  "Flexible Payment Plans",
+  "Same-Day Delivery Available",
+  "Free Shipping on all orders",
+  
+] satisfies string[] // Optional: helps with type inference if you want
+
 export default async function Nav(): Promise<JSX.Element> {
-  const regions: StoreRegion[] = await listRegions().then(
-    (regions) => regions
-  )
+  const regions: StoreRegion[] = await listRegions()
 
   return (
     <div className="sticky top-0 inset-x-0 z-50 backdrop-blur-md bg-white/80 border-b border-ui-border-base">
-      {/* 🔔 Announcement Banner */}
-      <div className="w-full bg-black text-white text-sm overflow-hidden">
-       {/* 🔔 Announcement Banner */}
-<div className="w-full bg-black text-white text-sm overflow-hidden">
- <div className="w-full bg-black text-white text-sm">
-  <div className="content-container-safe flex justify-center items-center py-2">
-    <span className="opacity-60 mx-3">•</span>
-    <span className="mx-3">Flexible Payment Plans</span>
-    <span className="opacity-60 mx-3">•</span>
-    <span className="mx-3">Same-Day Delivery Available</span>
-    <span className="opacity-60 mx-3">•</span>
-  </div>
-</div>
-</div>
-
+      {/* Animated Announcement Banner */}
+      <div className="relative w-full bg-black text-white text-sm overflow-hidden h-10">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="animate-slide-up flex flex-col items-center">
+            {announcements.map((text, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-6 px-4 py-2 whitespace-nowrap"
+              >
+                <span className="opacity-60">•</span>
+                <span>{text}</span>
+                <span className="opacity-60">•</span>
+              </div>
+            ))}
+            {/* Duplicate first item for seamless loop */}
+            <div className="flex items-center gap-6 px-4 py-2 whitespace-nowrap">
+              <span className="opacity-60">•</span>
+              <span>{announcements[0]}</span>
+              <span className="opacity-60">•</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <header className="relative w-full h-16">
@@ -37,7 +49,6 @@ export default async function Nav(): Promise<JSX.Element> {
             <div className="block md:hidden">
               <SideMenu regions={regions} />
             </div>
-
             <LocalizedClientLink href="/" data-testid="nav-store-link">
               <Image
                 src="/jbssupply.png"
@@ -60,7 +71,6 @@ export default async function Nav(): Promise<JSX.Element> {
               >
                 Products
               </button>
-
               <div className="absolute top-full left-0 pt-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 z-10">
                 <div className="bg-white border border-ui-border-base shadow-lg rounded-md min-w-[200px] overflow-hidden">
                   <LocalizedClientLink
@@ -69,21 +79,18 @@ export default async function Nav(): Promise<JSX.Element> {
                   >
                     Products for Restaurants
                   </LocalizedClientLink>
-
                   <LocalizedClientLink
                     href="/business/spas"
                     className="block px-4 py-3 text-sm hover:bg-gray-50 transition-colors"
                   >
                     Spas
                   </LocalizedClientLink>
-
                   <LocalizedClientLink
                     href="/business/bars"
                     className="block px-4 py-3 text-sm hover:bg-gray-50 transition-colors"
                   >
                     Bars
                   </LocalizedClientLink>
-
                   <LocalizedClientLink
                     href="/business/cleaning"
                     className="block px-4 py-3 text-sm hover:bg-gray-50 transition-colors"

@@ -54,7 +54,39 @@ html, body, #__next {
     -webkit-appearance: none;
   }
 }
+@keyframes slide-up {
+  0% {
+    transform: translateY(0);
+  }
+  20% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-40px);
+  }
+  45% {
+    transform: translateY(-40px);
+  }
+  50% {
+    transform: translateY(-80px);
+  }
+  70% {
+    transform: translateY(-80px);
+  }
+  75% {
+    transform: translateY(-120px);
+  }
+  95% {
+    transform: translateY(-120px);
+  }
+  100% {
+    transform: translateY(-160px);
+  }
+}
 
+.animate-slide-up {
+  animation: slide-up 20s infinite linear;
+}
 @layer components {
   .content-container {
     @apply w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-[1440px];
