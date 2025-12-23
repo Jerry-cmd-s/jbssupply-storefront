@@ -10,6 +10,7 @@ const announcements = [
   "Flexible Payment Plans",
   "Same-Day Delivery Available",
   "Free Shipping on all orders",
+  "25% off your first order",
   
 ] satisfies string[] // Optional: helps with type inference if you want
 
