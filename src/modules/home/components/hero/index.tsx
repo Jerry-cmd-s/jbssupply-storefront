@@ -34,8 +34,8 @@ const Hero = () => {
             <Image
               src="flvan.png"
               alt="JB'S Supply South Florida delivery network map"
-              width={1200}
-              height={800}
+              width={600}
+              height={200}
               priority
               className="h-auto w-full object-contain"
             />
