@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useActionState } from "react"
 import Input from "@modules/common/components/input"
@@ -24,9 +24,17 @@ const Register = ({ setCurrentView }: Props) => {
         Become a JB's Supply Store Member
       </h1>
       <p className="text-center text-base-regular text-ui-fg-base mb-4">
-        Create your JB's Supply Member profile, and get access to an enhanced
-        shopping experience.
+        Create your JB's Supply Member profile and enjoy exclusive benefits:
       </p>
+
+      <ul className="list-disc list-inside text-ui-fg-base text-small-regular mb-6 space-y-1">
+        <li>Save time by creating product bundles and adding them to your cart instantly.</li>
+        <li>Access special member-only pricing and promotions.</li>
+        <li>Track your orders easily with a personalized dashboard.</li>
+        <li>Receive faster checkout and preferred customer support.</li>
+        <li>Get early access to new products and updates.</li>
+      </ul>
+
       <form className="w-full flex flex-col" action={formAction}>
         <div className="flex flex-col w-full gap-y-2">
           <Input
