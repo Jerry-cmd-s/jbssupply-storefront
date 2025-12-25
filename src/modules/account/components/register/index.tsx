@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useActionState } from "react"
 import Input from "@modules/common/components/input"
@@ -17,96 +17,116 @@ const Register = ({ setCurrentView }: Props) => {
 
   return (
     <div
-      className="max-w-sm flex flex-col items-center"
+      className="max-w-sm w-full flex flex-col items-center bg-white border border-gray-200 rounded-2xl p-8 shadow-sm"
       data-testid="register-page"
     >
-      <h1 className="text-large-semi mb-6">
-        Become a JB's Supply Store Member
+      <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+        Become a JB’s Supply Member
       </h1>
-      <p className="text-center text-base-regular text-ui-fg-base mb-4">
-        Create your JB's Supply Member profile and enjoy exclusive benefits:
+
+      <p className="text-center text-sm text-gray-600 mb-6">
+        Create a business account and unlock exclusive wholesale benefits.
       </p>
 
-      <ul className="list-disc list-inside text-ui-fg-base text-small-regular mb-6 space-y-1">
-        <li>Save time by creating product bundles and adding them to your cart instantly.</li>
-        <li>Access special member-only pricing and promotions.</li>
-        <li>Track your orders easily with a personalized dashboard.</li>
-        <li>Receive faster checkout and preferred customer support.</li>
-        <li>Get early access to new products and updates.</li>
+      <ul className="text-sm text-gray-700 mb-6 space-y-1 list-disc list-inside">
+        <li>Save time with reusable product bundles</li>
+        <li>Access business-only pricing & promotions</li>
+        <li>Fast checkout and order tracking</li>
+        <li>Priority support for members</li>
       </ul>
 
-      <form className="w-full flex flex-col" action={formAction}>
-        <div className="flex flex-col w-full gap-y-2">
-          <Input
-            label="First name"
-            name="first_name"
+      <form className="w-full flex flex-col gap-y-3" action={formAction}>
+        <Input
+          label="First name"
+          name="first_name"
+          required
+          autoComplete="given-name"
+        />
+
+        <Input
+          label="Last name"
+          name="last_name"
+          required
+          autoComplete="family-name"
+        />
+
+        <Input
+          label="Company name"
+          name="company_name"
+          required
+          placeholder="e.g. Mario’s Pizzeria"
+        />
+
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-gray-700 mb-1">
+            Industry
+          </label>
+          <select
+            name="industry"
             required
-            autoComplete="given-name"
-            data-testid="first-name-input"
-          />
-          <Input
-            label="Last name"
-            name="last_name"
-            required
-            autoComplete="family-name"
-            data-testid="last-name-input"
-          />
-          <Input
-            label="Email"
-            name="email"
-            required
-            type="email"
-            autoComplete="email"
-            data-testid="email-input"
-          />
-          <Input
-            label="Phone"
-            name="phone"
-            type="tel"
-            autoComplete="tel"
-            data-testid="phone-input"
-          />
-          <Input
-            label="Password"
-            name="password"
-            required
-            type="password"
-            autoComplete="new-password"
-            data-testid="password-input"
-          />
-        </div>
-        <ErrorMessage error={message} data-testid="register-error" />
-        <span className="text-center text-ui-fg-base text-small-regular mt-6">
-          By creating an account, you agree to JB's Supply&apos;s{" "}
-          <LocalizedClientLink
-            href="/content/privacy-policy"
-            className="underline"
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
           >
+            <option value="">Select industry</option>
+            <option value="restaurant">Restaurant</option>
+            <option value="bar">Bar / Lounge</option>
+            <option value="cafe">Cafe</option>
+            <option value="cleaning">Cleaning Services</option>
+            <option value="hotel">Hotel / Hospitality</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <Input
+          label="Email"
+          name="email"
+          required
+          type="email"
+          autoComplete="email"
+        />
+
+        <Input
+          label="Phone"
+          name="phone"
+          type="tel"
+          autoComplete="tel"
+        />
+
+        <Input
+          label="Password"
+          name="password"
+          required
+          type="password"
+          autoComplete="new-password"
+        />
+
+        <ErrorMessage error={message} />
+
+        <p className="text-xs text-gray-500 text-center mt-4">
+          By creating an account, you agree to JB’s Supply{" "}
+          <LocalizedClientLink href="/content/privacy-policy" className="underline">
             Privacy Policy
           </LocalizedClientLink>{" "}
           and{" "}
-          <LocalizedClientLink
-            href="/content/terms-of-use"
-            className="underline"
-          >
+          <LocalizedClientLink href="/content/terms-of-use" className="underline">
             Terms of Use
           </LocalizedClientLink>
           .
-        </span>
-        <SubmitButton className="w-full mt-6" data-testid="register-button">
-          Join
+        </p>
+
+        <SubmitButton className="w-full mt-5 bg-black hover:bg-gray-900">
+          Create Business Account
         </SubmitButton>
       </form>
-      <span className="text-center text-ui-fg-base text-small-regular mt-6">
+
+      <p className="text-sm text-gray-600 mt-6">
         Already a member?{" "}
         <button
           onClick={() => setCurrentView(LOGIN_VIEW.SIGN_IN)}
-          className="underline"
+          className="underline font-medium"
         >
           Sign in
         </button>
-        .
-      </span>
+      </p>
     </div>
   )
 }
