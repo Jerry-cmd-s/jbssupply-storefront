@@ -30,16 +30,6 @@ const Hero = () => {
   return (
     <div className="relative h-screen md:h-[80vh] w-full overflow-hidden border-b border-ui-border-base bg-gradient-to-br from-black-900 to-red-600">
 
-<div className="relative w-full">
-            <Image
-              src="flvan.png"
-              alt="JB'S Supply South Florida delivery network map"
-              width={600}
-              height={200}
-              priority
-              className="h-auto w-full object-contain"
-            />
-          </div>
 
 
 
@@ -157,6 +147,17 @@ const MainContent = () => {
       {/* Why Choose Us */}
       <section className="content-container text-center mb-16 sm:mb-20">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+          <div className="relative w-full">
+            <Image
+              src="flvan.png"
+              alt="JB'S Supply South Florida delivery network map"
+              width={400}
+              height={200}
+              priority
+              className="h-auto w-full object-contain"
+            />
+          </div>
+
           <Heading level="h2" className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-black-900 font-calibri">
             Why Choose JB’s Supply?
           </Heading>
