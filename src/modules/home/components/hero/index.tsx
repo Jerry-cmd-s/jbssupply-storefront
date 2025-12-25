@@ -1,5 +1,5 @@
 "use client"
-
+import Image from "next/image"
 import { Button, Heading } from "@medusajs/ui"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
@@ -29,6 +29,21 @@ const Hero = () => {
 
   return (
     <div className="relative h-screen md:h-[80vh] w-full overflow-hidden border-b border-ui-border-base bg-gradient-to-br from-black-900 to-red-600">
+
+<div className="relative w-full">
+            <Image
+              src="flvan.png"
+              alt="JB'S Supply South Florida delivery network map"
+              width={1200}
+              height={800}
+              priority
+              className="h-auto w-full object-contain"
+            />
+          </div>
+
+
+
+      
       <div className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center px-6 sm:px-8 md:px-12">
 
         {/* Main heading */}
