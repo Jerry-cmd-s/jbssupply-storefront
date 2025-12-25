@@ -176,7 +176,7 @@ export default function MyBundlesPage() {
                     className="flex items-center justify-center gap-2 rounded-lg bg-gray-200 px-6 py-4 text-base font-medium text-gray-800 transition hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <Pencil size={20} />
-                    View and Edit
+                    View & Edit
                   </button>
                   <button
                     onClick={() => handleDelete(bundle.id)}
@@ -197,15 +197,15 @@ export default function MyBundlesPage() {
         )}
       </div>
       {/* Create Bundle Modal */}
-      <CreateBundleModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setEditBundle(null);
-          loadBundles();
-        }}
-        bundle={editBundle}
-      />
+     <CreateBundleModal
+  isOpen={isModalOpen}
+  onClose={() => {
+    setIsModalOpen(false);
+    setEditBundle(null);
+    loadBundles();
+  }}
+  bundle={editBundle}
+/>
     </div>
   );
 }
