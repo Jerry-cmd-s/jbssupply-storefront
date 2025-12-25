@@ -147,14 +147,14 @@ const MainContent = () => {
       {/* Why Choose Us */}
       <section className="content-container text-center mb-16 sm:mb-20">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-          <div className="relative w-full">
+          <div>
             <Image
               src="flvan.png"
               alt="JB'S Supply South Florida delivery network map"
               width={400}
               height={200}
-              priority
-              className="h-auto w-full object-contain"
+              //priority
+              //className="h-auto w-full object-contain"
             />
           </div>
 
