@@ -69,8 +69,11 @@ export async function getSavedBundlesAction() {
 }
 
 export async function updateBundleAction(bundleId: string, name: string, items: BundleItem[]) {
+  const headers = await getAuthHeaders();
+
   try {
-    const { customer } = await sdk.store.customer.retrieve();
+    // Retrieve customer (no extra fields)
+    const { customer } = await sdk.store.customer.retrieve(undefined, headers as any);
 
     if (!customer) {
       return { success: false, error: "No logged-in customer" };
@@ -80,30 +83,27 @@ export async function updateBundleAction(bundleId: string, name: string, items: 
 
     const updatedBundles = existingBundles.map((bundle) =>
       bundle.id === bundleId
-        ? { 
-            ...bundle, 
-            name: name.trim(), 
-            items,
-            updated_at: new Date().toISOString() 
-          }
+        ? { ...bundle, name: name.trim(), items, updated_at: new Date().toISOString() }
         : bundle
     );
 
-    // Check if bundle was found and updated
-    const updatedBundle = updatedBundles.find(b => b.id === bundleId);
-    if (!updatedBundle) {
+    if (!updatedBundles.find(b => b.id === bundleId)) {
       return { success: false, error: "Bundle not found" };
     }
 
-    await sdk.store.customer.update({
-      metadata: {
-        ...customer.metadata,
-        bundles: updatedBundles,
+    // Update metadata (no extra fields)
+    await sdk.store.customer.update(
+      {
+        metadata: {
+          ...customer.metadata,
+          bundles: updatedBundles,
+        },
       },
-    });
+      headers as any
+    );
 
     revalidatePath("/account/bundles");
-    return { success: true, bundle: updatedBundle };
+    return { success: true };
   } catch (err: any) {
     console.error("Update bundle action failed:", err);
     return { success: false, error: err.message || "Failed to update bundle" };
