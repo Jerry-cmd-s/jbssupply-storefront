@@ -151,8 +151,8 @@ const MainContent = () => {
   <Image
     src="/flvan.png"
     alt="JB'S Supply South Florida delivery network map"
-    width={400}
-    height={200}
+    width={450}
+    height={185}
   />
 </div>
 
