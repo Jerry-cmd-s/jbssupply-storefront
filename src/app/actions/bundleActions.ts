@@ -68,48 +68,67 @@ export async function getSavedBundlesAction() {
   }
 }
 
-export async function updateBundleAction(bundleId: string, name: string, items: BundleItem[]) {
+export async function updateBundleAction(
+  bundleId: string,
+  name: string,
+  items: BundleItem[]
+) {
   const headers = await getAuthHeaders();
 
   try {
-    // Retrieve customer (no extra fields)
-   const { customer } = await sdk.client.fetch("/store/customers/me", {
+    const { customer } = await sdk.client.fetch("/store/customers/me", {
       headers,
     });
+
     if (!customer) {
       return { success: false, error: "No logged-in customer" };
     }
 
-    const existingBundles: Bundle[] = (customer.metadata?.bundles as Bundle[]) || [];
+    const existingBundles: Bundle[] =
+      (customer.metadata?.bundles as Bundle[]) || [];
 
-    const updatedBundles = existingBundles.map((bundle) =>
-      bundle.id === bundleId
-        ? { ...bundle, name: name.trim(), items, updated_at: new Date().toISOString() }
-        : bundle
-    );
+    let found = false;
 
-    if (!updatedBundles.find(b => b.id === bundleId)) {
+    const updatedBundles = existingBundles.map((bundle) => {
+      if (bundle.id === bundleId) {
+        found = true;
+        return {
+          ...bundle,
+          name: name.trim(),
+          items,
+          updated_at: new Date().toISOString(),
+        };
+      }
+      return bundle;
+    });
+
+    if (!found) {
       return { success: false, error: "Bundle not found" };
     }
 
-    // Update metadata (no extra fields)
-    await sdk.store.customer.update(
-      {
+    await sdk.client.fetch("/store/customers/me", {
+      method: "POST",
+      headers,
+      body: {
         metadata: {
           ...customer.metadata,
           bundles: updatedBundles,
         },
       },
-      headers as any
-    );
+    });
 
     revalidatePath("/account/bundles");
+
     return { success: true };
   } catch (err: any) {
     console.error("Update bundle action failed:", err);
-    return { success: false, error: err.message || "Failed to update bundle" };
+    return {
+      success: false,
+      error: err.message || "Failed to update bundle",
+    };
   }
 }
+
 
 
 
