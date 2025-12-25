@@ -5,8 +5,10 @@ import { placeOrder } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
 import { useElements, useStripe } from "@stripe/react-stripe-js"
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import ErrorMessage from "../error-message"
+import { useParams, usePathname, useRouter } from "next/navigation"
+
 
 type PaymentButtonProps = {
   cart: HttpTypes.StoreCart
@@ -56,6 +58,13 @@ const StripePaymentButton = ({
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
+  const { countryCode } = useParams()
+  const router = useRouter()
+  const pathname = usePathname()
+  const paymentSession = cart.payment_collection?.payment_sessions?.find(
+    (session) => session.provider_id === "pp_stripe_stripe"
+  )
+
   const onPaymentCompleted = async () => {
     await placeOrder()
       .catch((err) => {
@@ -68,26 +77,33 @@ const StripePaymentButton = ({
 
   const stripe = useStripe()
   const elements = useElements()
-  const card = elements?.getElement("card")
-
-  const session = cart.payment_collection?.payment_sessions?.find(
-    (s) => s.status === "pending"
-  )
 
   const disabled = !stripe || !elements ? true : false
 
   const handlePayment = async () => {
+    if (!stripe || !elements || !cart) {
+      return
+    }
+    
     setSubmitting(true)
 
-    if (!stripe || !elements || !card || !cart) {
+
+    const { error: submitError } = await elements.submit()
+    if (submitError) {
+      setErrorMessage(submitError.message || null)
       setSubmitting(false)
       return
     }
 
+    const clientSecret = paymentSession?.data?.client_secret as string
+
     await stripe
-      .confirmCardPayment(session?.data.client_secret as string, {
-        payment_method: {
-          card: card,
+    .confirmPayment({
+      elements,
+      clientSecret,
+      confirmParams: {
+        return_url: `${window.location.origin}/api/capture-payment/${cart.id}?country_code=${countryCode}`,
+        payment_method_data: {
           billing_details: {
             name:
               cart.billing_address?.first_name +
@@ -105,32 +121,51 @@ const StripePaymentButton = ({
             phone: cart.billing_address?.phone ?? undefined,
           },
         },
-      })
-      .then(({ error, paymentIntent }) => {
-        if (error) {
-          const pi = error.payment_intent
+      },
+      redirect: "if_required",
+    })
+    .then(({ error, paymentIntent }) => {
+      if (error) {
+        const pi = error.payment_intent
 
-          if (
-            (pi && pi.status === "requires_capture") ||
-            (pi && pi.status === "succeeded")
-          ) {
-            onPaymentCompleted()
-          }
-
-          setErrorMessage(error.message || null)
+        if (
+          (pi && pi.status === "requires_capture") ||
+          (pi && pi.status === "succeeded")
+        ) {
+          onPaymentCompleted()
           return
         }
 
-        if (
-          (paymentIntent && paymentIntent.status === "requires_capture") ||
-          paymentIntent.status === "succeeded"
-        ) {
-          return onPaymentCompleted()
-        }
-
+        setErrorMessage(error.message || null)
+        setSubmitting(false)
         return
-      })
+      }
+
+      if (
+        paymentIntent.status === "requires_capture" ||
+        paymentIntent.status === "succeeded"
+      ) {
+        onPaymentCompleted()
+      }
+    })
   }
+
+  useEffect(() => {
+    if (cart.payment_collection?.status === "authorized") {
+      onPaymentCompleted()
+    }
+  }, [cart.payment_collection?.status])
+
+  useEffect(() => {
+    elements?.getElement("payment")?.on("change", (e) => {
+      if (!e.complete) {
+        // redirect to payment step if not complete
+        router.push(pathname + "?step=payment", {
+          scroll: false,
+        })
+      }
+    })
+  }, [elements])
 
   return (
     <>
