@@ -1,3 +1,4 @@
+// src/components/CreateBundleModal.tsx
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
@@ -5,9 +6,7 @@ import { X } from "lucide-react";
 import { HttpTypes } from "@medusajs/types";
 import { sdk } from "@lib/config";
 import { getPricesForVariant } from "@lib/util/get-product-price";
-import { saveBundleAction } from "app/actions/bundleActions";
-
-/* ---------------- TYPES ---------------- */
+import { saveBundleAction, updateBundleAction } from 'app/actions/bundleActions';
 
 type BundleItem = {
   product_id: string;
@@ -15,14 +14,19 @@ type BundleItem = {
   quantity: number;
 };
 
+type Bundle = {
+  id: string;
+  name: string;
+  items: BundleItem[];
+};
+
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  bundle?: Bundle | null; // Optional bundle for editing
 };
 
-/* ---------------- COMPONENT ---------------- */
-
-export default function CreateBundleModal({ isOpen, onClose }: Props) {
+export default function CreateBundleModal({ isOpen, onClose, bundle }: Props) {
   /* ---------- STATE ---------- */
   const [products, setProducts] = useState<HttpTypes.StoreProduct[]>([]);
   const [selected, setSelected] = useState<BundleItem[]>([]);
@@ -30,21 +34,27 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  /* ---------- PRE-FILL WHEN EDITING ---------- */
+  useEffect(() => {
+    if (bundle) {
+      setBundleName(bundle.name);
+      setSelected(bundle.items);
+    } else {
+      setBundleName("");
+      setSelected([]);
+    }
+    setSearchQuery("");
+  }, [bundle, isOpen]);
+
   /* ---------- LOAD PRODUCTS ---------- */
   useEffect(() => {
-    if (!isOpen) {
-      setSelected([]);
-      setBundleName("");
-      setSearchQuery("");
-      return;
-    }
+    if (!isOpen) return;
 
     const fetchProducts = async () => {
       try {
         const { products } = await sdk.store.product.list({
           limit: 200,
-          fields:
-            "id,title,thumbnail,variants.id,variants.title,variants.calculated_price",
+          fields: "id,title,thumbnail,variants.id,variants.title,variants.calculated_price",
         });
 
         setProducts(
@@ -65,15 +75,11 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
   /* ---------- SEARCH (MEMOIZED) ---------- */
   const filteredProducts = useMemo(() => {
     if (!searchQuery.trim()) return products;
-
     const q = searchQuery.toLowerCase();
-
     return products.filter((product) => {
       return (
         product.title.toLowerCase().includes(q) ||
-        product.variants?.some((v) =>
-          v.title?.toLowerCase().includes(q)
-        )
+        product.variants?.some((v) => v.title?.toLowerCase().includes(q))
       );
     });
   }, [products, searchQuery]);
@@ -82,7 +88,6 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
   const toggleItem = (product: HttpTypes.StoreProduct, variantId: string) => {
     setSelected((prev) => {
       const existing = prev.find((i) => i.variant_id === variantId);
-
       if (existing) {
         return prev.map((i) =>
           i.variant_id === variantId
@@ -90,7 +95,6 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
             : i
         );
       }
-
       return [
         ...prev,
         {
@@ -115,27 +119,33 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
     );
   };
 
-  /* ---------- SAVE BUNDLE ---------- */
+  /* ---------- SAVE OR UPDATE BUNDLE ---------- */
   const handleSave = async () => {
     if (!bundleName.trim()) {
       alert("Please enter a bundle name");
       return;
     }
-
     if (selected.length === 0) {
       alert("Add at least one product");
       return;
     }
 
     setLoading(true);
-    const result = await saveBundleAction(bundleName.trim(), selected);
-    setLoading(false);
+    try {
+      const result = bundle
+        ? await updateBundleAction(bundle.id, bundleName.trim(), selected)
+        : await saveBundleAction(bundleName.trim(), selected);
 
-    if (result.success) {
-      alert("Bundle saved successfully");
-      onClose();
-    } else {
-      alert(result.error || "Failed to save bundle");
+      if (result.success) {
+        alert(bundle ? "Bundle updated successfully!" : "Bundle saved successfully!");
+        onClose();
+      } else {
+        alert(result.error || "Failed to save bundle");
+      }
+    } catch (err) {
+      alert("An unexpected error occurred");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -147,7 +157,9 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
       <div className="w-full max-w-7xl max-h-[92vh] overflow-hidden rounded-3xl bg-white shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b bg-gray-50 px-6 py-4">
-          <h2 className="text-2xl font-bold">Create Bundle</h2>
+          <h2 className="text-2xl font-bold">
+            {bundle ? "Edit Bundle" : "Create New Bundle"}
+          </h2>
           <button
             onClick={onClose}
             className="rounded-full p-2 hover:bg-gray-200"
@@ -178,9 +190,7 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
               {filteredProducts.map((product) => {
                 const variant = product.variants![0];
                 const price = getPricesForVariant(variant);
-                const isAdded = selected.some(
-                  (i) => i.variant_id === variant.id
-                );
+                const isAdded = selected.some((i) => i.variant_id === variant.id);
 
                 return (
                   <div
@@ -241,41 +251,37 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
               className="w-full rounded-xl border px-4 py-3 text-base"
             />
 
-            <div className="mt-6 space-y-3">
-              {selected.map((item) => {
-                const product = products.find(
-                  (p) => p.id === item.product_id
-                );
-
-                return (
-                  <div
-                    key={item.variant_id}
-                    className="flex items-center justify-between rounded-xl bg-white p-4 shadow"
-                  >
-                    <span className="text-sm font-medium">
-                      {product?.title}
-                    </span>
-
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => updateQty(item.variant_id, -1)}
-                        className="h-8 w-8 rounded-lg bg-gray-200"
-                      >
-                        −
-                      </button>
-                      <span className="w-8 text-center">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() => updateQty(item.variant_id, 1)}
-                        className="h-8 w-8 rounded-lg bg-gray-200"
-                      >
-                        +
-                      </button>
+            <div className="mt-6 space-y-3 max-h-96 overflow-y-auto">
+              {selected.length === 0 ? (
+                <p className="py-8 text-center text-gray-500">No items added yet</p>
+              ) : (
+                selected.map((item) => {
+                  const product = products.find((p) => p.id === item.product_id);
+                  return (
+                    <div
+                      key={item.variant_id}
+                      className="flex items-center justify-between rounded-xl bg-white p-4 shadow"
+                    >
+                      <span className="text-sm font-medium">{product?.title}</span>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => updateQty(item.variant_id, -1)}
+                          className="h-8 w-8 rounded-lg bg-gray-200"
+                        >
+                          −
+                        </button>
+                        <span className="w-8 text-center">{item.quantity}</span>
+                        <button
+                          onClick={() => updateQty(item.variant_id, 1)}
+                          className="h-8 w-8 rounded-lg bg-gray-200"
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
 
             <button
@@ -283,7 +289,7 @@ export default function CreateBundleModal({ isOpen, onClose }: Props) {
               disabled={loading || !bundleName.trim() || selected.length === 0}
               className="mt-6 w-full rounded-xl bg-black py-4 text-lg font-bold text-white disabled:opacity-50"
             >
-              {loading ? "Saving..." : "Save Bundle"}
+              {loading ? "Saving..." : bundle ? "Save Changes" : "Save Bundle"}
             </button>
           </div>
         </div>

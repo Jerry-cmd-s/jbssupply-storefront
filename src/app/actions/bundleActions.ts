@@ -69,41 +69,39 @@ export async function getSavedBundlesAction() {
 }
 
 export async function updateBundleAction(bundleId: string, name: string, items: BundleItem[]) {
-  const headers = await getAuthHeaders();
   try {
-    const { customer } = await sdk.client.fetch("/store/customers/me", {
-      headers,
-    });
+    const { customer } = await sdk.store.customer.retrieve();
+
     if (!customer) {
       return { success: false, error: "No logged-in customer" };
     }
+
     const existingBundles: Bundle[] = (customer.metadata?.bundles as Bundle[]) || [];
-    console.log("Update: Existing bundle IDs:", existingBundles.map(b => b.id)); // Debug: List all current IDs
-    console.log("Update: Target bundleId:", bundleId); // Debug: Incoming ID
+
     const updatedBundles = existingBundles.map((bundle) =>
       bundle.id === bundleId
-        ? { ...bundle, name: name.trim(), items, updated_at: new Date().toISOString() }
+        ? { 
+            ...bundle, 
+            name: name.trim(), 
+            items,
+            updated_at: new Date().toISOString() 
+          }
         : bundle
     );
-    const updatedBundle = updatedBundles.find((b) => b.id === bundleId);
+
+    // Check if bundle was found and updated
+    const updatedBundle = updatedBundles.find(b => b.id === bundleId);
     if (!updatedBundle) {
-      console.log("Update: Bundle not found - no changes made"); // Debug: Confirm miss
       return { success: false, error: "Bundle not found" };
     }
-    console.log("Update: Found and updated bundle:", updatedBundle.id); // Debug: Confirm hit
-    await sdk.client.fetch("/store/customers/me", {
-      method: "POST",
-      headers,
-      body: {
-        metadata: {
-          ...customer.metadata,
-          bundles: updatedBundles,
-        },
+
+    await sdk.store.customer.update({
+      metadata: {
+        ...customer.metadata,
+        bundles: updatedBundles,
       },
     });
-    // Optional: Re-fetch to confirm persistence
-    const { customer: updatedCustomer } = await sdk.client.fetch("/store/customers/me", { headers });
-    console.log("Update: Post-update bundles count:", (updatedCustomer.metadata?.bundles as Bundle[] || []).length); // Debug: Verify saved
+
     revalidatePath("/account/bundles");
     return { success: true, bundle: updatedBundle };
   } catch (err: any) {
@@ -111,6 +109,8 @@ export async function updateBundleAction(bundleId: string, name: string, items: 
     return { success: false, error: err.message || "Failed to update bundle" };
   }
 }
+
+
 
 export async function deleteBundleAction(bundleId: string) {
   const headers = await getAuthHeaders();
