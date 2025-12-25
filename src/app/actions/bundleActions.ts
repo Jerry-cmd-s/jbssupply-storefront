@@ -73,8 +73,9 @@ export async function updateBundleAction(bundleId: string, name: string, items: 
 
   try {
     // Retrieve customer (no extra fields)
-    const { customer } = await sdk.store.customer.retrieve(undefined, headers as any);
-
+   const { customer } = await sdk.client.fetch("/store/customers/me", {
+      headers,
+    });
     if (!customer) {
       return { success: false, error: "No logged-in customer" };
     }
