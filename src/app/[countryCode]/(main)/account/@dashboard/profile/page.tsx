@@ -5,6 +5,8 @@ import ProfileBillingAddress from "@modules/account/components/profile-billing-a
 import ProfileEmail from "@modules/account/components/profile-email"
 import ProfileName from "@modules/account/components/profile-name"
 import ProfilePassword from "@modules/account/components/profile-password"
+import ProfileCompany from "@modules/account/components/profile-company"
+import ProfileIndustry from "@modules/account/components/profile-industry"
 
 import { notFound } from "next/navigation"
 import { listRegions } from "@lib/data/regions"
@@ -34,16 +36,24 @@ export default async function Profile() {
         </p>
       </div>
       <div className="flex flex-col gap-y-8 w-full">
-        <ProfileName customer={customer} />
-        <Divider />
-        <ProfileEmail customer={customer} />
-        <Divider />
-        <ProfilePhone customer={customer} />
-        <Divider />
-        {/* <ProfilePassword customer={customer} />
-        <Divider /> */}
-        <ProfileBillingAddress customer={customer} regions={regions} />
-      </div>
+  <ProfileName customer={customer} />
+  <Divider />
+
+  <ProfileCompany customer={customer} />
+  <Divider />
+
+  <ProfileIndustry customer={customer} />
+  <Divider />
+
+  <ProfileEmail customer={customer} />
+  <Divider />
+
+  <ProfilePhone customer={customer} />
+  <Divider />
+
+  <ProfileBillingAddress customer={customer} regions={regions} />
+</div>
+
     </div>
   )
 }
