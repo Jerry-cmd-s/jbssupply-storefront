@@ -136,7 +136,7 @@ const MainContent = () => {
     },
     {
       title: "Reliability",
-      desc: "You show up on time and your products do what they’re supposed to do.",
+      desc: "You show up on time and your products do what they’re supposed to do.", 
       icon: ShieldCheck,
     },
   ]
@@ -147,16 +147,14 @@ const MainContent = () => {
       {/* Why Choose Us */}
       <section className="content-container text-center mb-16 sm:mb-20">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-          <div>
-            <Image
-              src="flvan.png"
-              alt="JB'S Supply South Florida delivery network map"
-              width={400}
-              height={200}
-              //priority
-              //className="h-auto w-full object-contain"
-            />
-          </div>
+          <div className="flex justify-center">
+  <Image
+    src="/flvan.png"
+    alt="JB'S Supply South Florida delivery network map"
+    width={400}
+    height={200}
+  />
+</div>
 
           <Heading level="h2" className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-black-900 font-calibri">
             Why Choose JB’s Supply?
