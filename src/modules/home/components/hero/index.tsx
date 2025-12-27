@@ -112,6 +112,12 @@ const Hero = () => {
           </motion.p>
         </AnimatePresence>
       </div>
+       <Image
+    src="/hero.png"
+    alt="JB'S Supply South Florida delivery network map"
+    width={800}
+    height={250}
+  />
     </div>
   )
 }
