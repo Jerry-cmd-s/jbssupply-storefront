@@ -11,7 +11,7 @@ const announcements = [
   "Same-Day Delivery Available",
   "Free Shipping on all orders",
   "25% off your first order",
-  
+  "Same-Day Delivery Available",
 ] satisfies string[] // Optional: helps with type inference if you want
 
 export default async function Nav(): Promise<JSX.Element> {
