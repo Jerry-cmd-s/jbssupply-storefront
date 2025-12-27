@@ -113,7 +113,7 @@ const Hero = () => {
         </AnimatePresence>
       </div>
     <Image
-    src="/hero-supply.png"
+    src="/hero.png"
     alt="JB’s Supply multi-industry supplies"
     fill
     priority
