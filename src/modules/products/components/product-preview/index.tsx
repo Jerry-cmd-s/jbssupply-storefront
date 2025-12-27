@@ -19,26 +19,32 @@ export default function ProductPreview({
   region: HttpTypes.StoreRegion
 }) {
   const [loading, setLoading] = useState(false)
+
   const { cheapestPrice } = getProductPrice({ product })
   const defaultVariant = product.variants?.[0]
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+
     if (!defaultVariant) return
 
     try {
       setLoading(true)
+
       let cartId = getCartId()
+
       // Create cart if it doesn't exist
       if (!cartId) {
         const cartRes = await fetch("/api/cart", {
           method: "POST",
         })
+
         const { cart } = await cartRes.json()
         cartId = cart.id
         setCartId(cartId)
       }
+
       // Add item to cart
       await fetch(`/api/cart/${cartId}/line-items`, {
         method: "POST",
@@ -66,14 +72,17 @@ export default function ProductPreview({
             size="full"
             isFeatured={isFeatured}
           />
+
           <div className="flex txt-compact-medium mt-4 justify-between items-start">
             <Text className="text-ui-fg-subtle">
               {product.title}
             </Text>
+
             {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
           </div>
         </div>
       </LocalizedClientLink>
+
       {/* Add to Cart */}
       <Button
         size="small"
