@@ -20,7 +20,7 @@ export default async function Nav(): Promise<JSX.Element> {
   return (
     <div className="sticky top-0 inset-x-0 z-50 backdrop-blur-md bg-white/80 border-b border-ui-border-base">
       {/* Animated Announcement Banner */}
-  <div className="relative w-full bg-black text-white text-sm font-bold overflow-hidden h-10">
+  <div className="relative w-full bg-gray-50 text-black text-sm font-bold overflow-hidden h-10">
 
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="animate-slide-up flex flex-col items-center">
