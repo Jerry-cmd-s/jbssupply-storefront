@@ -3,8 +3,8 @@ import Image from "next/image"
 import { Button, Heading } from "@medusajs/ui"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
-import { ShieldCheck, Zap, PackageCheck } from "lucide-react"
 import Link from "next/link"
+
 // animations
 const wordVariants = { enter: { opacity: 0, y: 20 }, center: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -20 } }
 const secondaryTextVariants = { enter: { opacity: 0, y: 10 }, center: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -10 } }
@@ -14,10 +14,11 @@ const buttonVariants = {
   hover: { scale: 1.05, transition: { duration: 0.2 } },
 }
 
+const words = ["Restaurants", "Salon & Spas", "Cafes", "Bars", "Office"]
+
 const Hero = () => {
   const [wordIndex, setWordIndex] = useState(0)
   const [showNextDay, setShowNextDay] = useState(false)
-  const words = ["Restaurants", "Salon & Spas", "Cafes", "Bars", "Office"]
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -30,36 +31,32 @@ const Hero = () => {
   return (
     <div className="relative h-screen md:h-[80vh] w-full overflow-hidden border-b border-ui-border-base bg-gradient-to-br from-black-900 to-red-600">
 
-
-
-
-      
-      <div className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center px-6 sm:px-8 md:px-12">
-
+      {/* Pull content higher */}
+      <div className="absolute inset-x-0 top-16 z-10 flex flex-col items-center text-center px-6 sm:px-8 md:px-12">
+        
         {/* Main heading */}
-    <div className="max-w-5xl -mt-12 md:-mt-16">
- <Heading
-  level="h2"
-  className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight text-black-900 font-calibri"
->
-  Supplying{" "}
-  <AnimatePresence mode="wait">
-    <motion.span
-      key={words[wordIndex]}
-      variants={wordVariants}
-      initial="enter"
-      animate="center"
-      exit="exit"
-      transition={{ duration: 0.5 }}
-      className="text-blue-600 inline-block"
-    >
-      {words[wordIndex]}
-    </motion.span>
-  </AnimatePresence>{" "}
-  with Total Solutions
-</Heading>
-</div>
-
+        <div className="max-w-5xl -mt-12 md:-mt-16">
+          <Heading
+            level="h2"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight text-black-900 font-calibri"
+          >
+            Supplying{" "}
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={words[wordIndex]}
+                variants={wordVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.5 }}
+                className="text-blue-600 inline-block"
+              >
+                {words[wordIndex]}
+              </motion.span>
+            </AnimatePresence>{" "}
+            with Total Solutions
+          </Heading>
+        </div>
 
         {/* Subheading */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }} className="mt-6 max-w-3xl">
@@ -78,18 +75,15 @@ const Hero = () => {
           </motion.div>
 
           <motion.div variants={buttonVariants} initial="hidden" animate="visible" whileHover="hover">
-          
-
-<Link href="/account">
-  <Button
-    variant="secondary"
-    size="large"
-    className="rounded-2xl px-10 py-5 bg-gray border-2 border-black-900 text-black-900 text-lg font-medium font-calibri"
-  >
-    Build Bundle
-  </Button>
-</Link>
-
+            <Link href="/account">
+              <Button
+                variant="secondary"
+                size="large"
+                className="rounded-2xl px-10 py-5 bg-gray border-2 border-black-900 text-black-900 text-lg font-medium font-calibri"
+              >
+                Build Bundle
+              </Button>
+            </Link>
           </motion.div>
         </div>
 
@@ -112,15 +106,19 @@ const Hero = () => {
           </motion.p>
         </AnimatePresence>
       </div>
-    <Image
-      src="/hero.png"
-      alt="JB’s Supply multi-industry supplies"
-      className="absolute bottom-0 left-0 w-full h-1/2 object-cover"
-    />
+
+      {/* Hero image at bottom */}
+      <Image
+        src="/hero.png"
+        alt="JB’s Supply multi-industry supplies"
+        className="absolute bottom-0 left-0 w-full h-1/2 object-cover"
+      />
     </div>
-    
   )
 }
+
+export default Hero
+
 
 const MainContent = () => {
   const cardVariants = {
