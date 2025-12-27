@@ -1,10 +1,8 @@
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
-
 import { getCategoryByHandle, listCategories } from "@lib/data/categories"
 import { listRegions } from "@lib/data/regions"
 import { StoreRegion } from "@medusajs/types"
-
 import CategoryTemplate from "@modules/categories/templates"
 import CategorySearch from "../search"
 
@@ -16,13 +14,11 @@ type Props = {
 // Recursively collect IDs from parent + children
 function collectCategoryIds(category: any) {
   const ids = [category.id]
-
   if (category.category_children?.length) {
     for (const child of category.category_children) {
       ids.push(...collectCategoryIds(child))
     }
   }
-
   return ids
 }
 
@@ -88,12 +84,12 @@ export default async function CategoryPage(props: Props) {
           title="Search Products in this Category"
         />
       </div>
-
       <CategoryTemplate
         category={productCategory}
         categoryIds={categoryIds}        // required for product listing
         page={page}
         countryCode={params.countryCode}
+        showAddToCart={true}             // NEW: prop to show Add to Cart button next to products
       />
     </>
   )
