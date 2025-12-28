@@ -16,23 +16,21 @@ const Register = ({ setCurrentView }: Props) => {
   const [message, formAction] = useActionState(signup, null)
 
   return (
-    <div
-      className="max-w-lg w-full flex flex-col bg-white border border-gray-200 rounded-2xl shadow-md overflow-hidden"
-      data-testid="register-page"
-    >
+    <div className="w-full max-w-md mx-auto flex flex-col bg-white border border-gray-200 rounded-2xl shadow-md overflow-hidden my-6">
+      
       {/* Header */}
-      <div className="bg-gradient-to-r from-gray-900 to-black text-white px-8 py-6">
-        <h1 className="text-2xl font-semibold">
+      <div className="bg-gradient-to-r from-gray-900 to-black text-white px-6 py-5 sm:px-8 sm:py-6">
+        <h1 className="text-xl sm:text-2xl font-semibold">
           Become a JB’s Supply Member
         </h1>
-        <p className="text-sm text-gray-200 mt-1">
+        <p className="text-xs sm:text-sm text-gray-200 mt-1">
           Business-only pricing, bundles, and payment flexibility.
         </p>
       </div>
 
       {/* Body */}
-      <div className="px-8 py-6">
-        <ul className="text-sm text-gray-700 mb-6 space-y-1 list-disc list-inside">
+      <div className="px-6 py-5 sm:px-8 sm:py-6">
+        <ul className="text-xs sm:text-sm text-gray-700 mb-5 space-y-1 list-disc list-inside">
           <li>Create reusable product bundles</li>
           <li>Access member-only pricing & promotions</li>
           <li>Fast checkout and order tracking</li>
@@ -47,7 +45,6 @@ const Register = ({ setCurrentView }: Props) => {
               required
               autoComplete="given-name"
             />
-
             <Input
               label="Last name"
               name="last_name"
@@ -60,7 +57,7 @@ const Register = ({ setCurrentView }: Props) => {
             label="Company name"
             name="company_name"
             required
-            placeholder="e.g. Mario’s Pizzeria"
+            placeholder="e.g. Jerry’s Pizzeria"
           />
 
           <div className="flex flex-col">
@@ -115,8 +112,7 @@ const Register = ({ setCurrentView }: Props) => {
             and{" "}
             <LocalizedClientLink href="/content/terms-of-use" className="underline">
               Terms of Use
-            </LocalizedClientLink>
-            .
+            </LocalizedClientLink>.
           </p>
 
           <SubmitButton className="w-full mt-5 bg-black hover:bg-gray-900">
