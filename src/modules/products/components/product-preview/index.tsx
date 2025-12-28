@@ -32,13 +32,7 @@ export default function ProductPreview({
     setLoading(false);
 
     if (result.success) {
-      alert("Product added to cart!");
-    } else {
-      alert(result.error || "Failed to add to cart");
-    }
-  };
-
-  return (
+       return (
     <div className="group">
       {/* Product navigation */}
       <LocalizedClientLink href={`/products/${product.handle}`}>
@@ -68,4 +62,10 @@ export default function ProductPreview({
       </Button>
     </div>
   );
+    } else {
+      alert(result.error || "Failed to add to cart");
+    }
+  };
+
+ 
 }
