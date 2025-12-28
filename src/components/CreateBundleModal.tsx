@@ -52,6 +52,8 @@ export default function CreateBundleModal({ isOpen, onClose, bundle }: Props) {
         const { products } = await sdk.store.product.list({
           limit: 200,
           fields: "id,title,thumbnail,variants.id,variants.title,variants.calculated_price",
+          expand: "variants.prices",
+          currency_code: "usd",
         });
         setProducts(
           products.filter(
@@ -116,13 +118,14 @@ export default function CreateBundleModal({ isOpen, onClose, bundle }: Props) {
 
   /* ---------- CALCULATE TOTAL PRICE ---------- */
   const totalPrice = useMemo(() => {
-    return selected.reduce((sum, item) => {
+    const totalInCents = selected.reduce((sum, item) => {
       const product = products.find((p) => p.id === item.product_id);
       if (!product) return sum;
       const variant = product.variants?.find((v) => v.id === item.variant_id);
       if (!variant || typeof variant.calculated_price !== "number") return sum;
       return sum + variant.calculated_price * item.quantity;
     }, 0);
+    return totalInCents / 100;
   }, [selected, products]);
 
   const formatPrice = (amount: number) => {
