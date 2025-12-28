@@ -1,4 +1,6 @@
+// src/components/CreateBundleModal.tsx
 "use client";
+
 import { useEffect, useState, useMemo } from "react";
 import { X } from "lucide-react";
 import { HttpTypes } from "@medusajs/types";
@@ -47,12 +49,14 @@ export default function CreateBundleModal({ isOpen, onClose, bundle }: Props) {
   /* ---------- LOAD PRODUCTS ---------- */
   useEffect(() => {
     if (!isOpen) return;
+
     const fetchProducts = async () => {
       try {
         const { products } = await sdk.store.product.list({
           limit: 200,
           fields: "id,title,thumbnail,variants.id,variants.title,variants.calculated_price",
         });
+
         setProducts(
           products.filter(
             (p): p is HttpTypes.StoreProduct =>
@@ -64,6 +68,7 @@ export default function CreateBundleModal({ isOpen, onClose, bundle }: Props) {
         alert("Failed to load products. Please refresh.");
       }
     };
+
     fetchProducts();
   }, [isOpen]);
 
@@ -114,24 +119,6 @@ export default function CreateBundleModal({ isOpen, onClose, bundle }: Props) {
     );
   };
 
-  /* ---------- CALCULATE TOTAL PRICE ---------- */
-  const totalPrice = useMemo(() => {
-    return selected.reduce((sum, item) => {
-      const product = products.find((p) => p.id === item.product_id);
-      if (!product) return sum;
-      const variant = product.variants?.find((v) => v.id === item.variant_id);
-      if (!variant || typeof variant.calculated_price !== "number") return sum;
-      return sum + variant.calculated_price * item.quantity;
-    }, 0);
-  }, [selected, products]);
-
-  const formatPrice = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
-
   /* ---------- SAVE OR UPDATE BUNDLE ---------- */
   const handleSave = async () => {
     if (!bundleName.trim()) {
@@ -142,11 +129,13 @@ export default function CreateBundleModal({ isOpen, onClose, bundle }: Props) {
       alert("Add at least one product");
       return;
     }
+
     setLoading(true);
     try {
       const result = bundle
         ? await updateBundleAction(bundle.id, bundleName.trim(), selected)
         : await saveBundleAction(bundleName.trim(), selected);
+
       if (result.success) {
         alert(bundle ? "Bundle updated successfully!" : "Bundle saved successfully!");
         onClose();
@@ -178,12 +167,14 @@ export default function CreateBundleModal({ isOpen, onClose, bundle }: Props) {
             <X className="h-6 w-6" />
           </button>
         </div>
+
         <div className="flex h-full max-h-[calc(92vh-72px)] flex-col md:flex-row">
           {/* PRODUCT GRID */}
           <div className="flex-1 overflow-y-auto p-6">
             <h3 className="mb-5 text-lg font-semibold">
               Choose Products ({filteredProducts.length})
             </h3>
+
             {/* SEARCH */}
             <div className="mb-5">
               <input
@@ -194,11 +185,13 @@ export default function CreateBundleModal({ isOpen, onClose, bundle }: Props) {
                 className="w-full rounded-xl border px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-black"
               />
             </div>
+
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {filteredProducts.map((product) => {
                 const variant = product.variants![0];
                 const price = getPricesForVariant(variant);
                 const isAdded = selected.some((i) => i.variant_id === variant.id);
+
                 return (
                   <div
                     key={product.id}
@@ -221,14 +214,17 @@ export default function CreateBundleModal({ isOpen, onClose, bundle }: Props) {
                         <div className="h-full w-full bg-gray-200" />
                       )}
                     </div>
+
                     <p className="line-clamp-2 text-sm font-medium">
                       {product.title}
                     </p>
+
                     {price && (
                       <p className="mt-1 text-base font-bold">
                         {price.calculated_price}
                       </p>
                     )}
+
                     <span
                       className={`mt-3 inline-block rounded-full px-4 py-1 text-xs font-bold ${
                         isAdded
@@ -243,15 +239,18 @@ export default function CreateBundleModal({ isOpen, onClose, bundle }: Props) {
               })}
             </div>
           </div>
+
           {/* PREVIEW */}
           <div className="w-full border-t bg-gray-50 p-6 md:w-96 md:border-l md:border-t-0">
             <h3 className="mb-4 text-lg font-semibold">Bundle Preview</h3>
+
             <input
               value={bundleName}
               onChange={(e) => setBundleName(e.target.value)}
               placeholder="e.g. Monthly Cleaning Kit"
               className="w-full rounded-xl border px-4 py-3 text-base"
             />
+
             <div className="mt-6 space-y-3 max-h-96 overflow-y-auto">
               {selected.length === 0 ? (
                 <p className="py-8 text-center text-gray-500">No items added yet</p>
@@ -284,12 +283,7 @@ export default function CreateBundleModal({ isOpen, onClose, bundle }: Props) {
                 })
               )}
             </div>
-            <div className="mt-4 border-t pt-4">
-              <div className="flex justify-between text-lg font-bold">
-                <span>Total Price</span>
-                <span>{formatPrice(totalPrice)}</span>
-              </div>
-            </div>
+
             <button
               onClick={handleSave}
               disabled={loading || !bundleName.trim() || selected.length === 0}
