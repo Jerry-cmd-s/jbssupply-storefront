@@ -31,8 +31,13 @@ export default function ProductPreview({
     const result = await addToCartAction(defaultVariant.id, 1);
     setLoading(false);
 
-    if (result.success) {
-       return (
+    if (!result.success) {
+  alert(result.error || "Failed to add to cart")
+}
+
+
+
+     return (
     <div className="group">
       {/* Product navigation */}
       <LocalizedClientLink href={`/products/${product.handle}`}>
@@ -62,9 +67,6 @@ export default function ProductPreview({
       </Button>
     </div>
   );
-    } else {
-      alert(result.error || "Failed to add to cart");
-    }
   };
 
  
