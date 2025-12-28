@@ -20,6 +20,9 @@ export default function MyBundlesPage() {
   const [loading, setLoading] = useState(true);
   const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+const [bundleTotals, setBundleTotals] = useState<Record<string, number>>({});
+
+
 
   const loadBundles = async () => {
     try {
@@ -149,6 +152,10 @@ export default function MyBundlesPage() {
                             {bundle.items.length} {bundle.items.length === 1 ? "item" : "items"}
                           </span>
                         </div>
+
+
+
+
                       </div>
                     </div>
                   </div>
