@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useActionState } from "react"
 import Input from "@modules/common/components/input"
 import { LOGIN_VIEW } from "@modules/account/templates/login-template"
@@ -16,20 +17,32 @@ const Register = ({ setCurrentView }: Props) => {
   const [message, formAction] = useActionState(signup, null)
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col bg-white border border-gray-200 rounded-2xl shadow-md overflow-hidden my-6">
+    <div className="w-full max-w-5xl mx-auto my-8 flex flex-col md:flex-row bg-white rounded-2xl shadow-md overflow-hidden">
       
-      {/* Header */}
-      <div className="bg-gradient-to-r from-gray-900 to-black text-white px-6 py-5 sm:px-8 sm:py-6">
-        <h1 className="text-xl sm:text-2xl font-semibold">
-          Become a JB’s Supply Member
-        </h1>
-        <p className="text-xs sm:text-sm text-gray-200 mt-1">
-          Business-only pricing, bundles, and payment flexibility.
-        </p>
+      {/* Left Image */}
+      <div className="w-full md:w-1/2 flex justify-center items-center bg-gray-100 p-6">
+        <Image
+          src="/hero.png"
+          alt="JB'S Supply South Florida delivery network map"
+          width={450}
+          height={185}
+          className="object-contain"
+        />
       </div>
 
-      {/* Body */}
-      <div className="px-6 py-5 sm:px-8 sm:py-6">
+      {/* Right Form */}
+      <div className="w-full md:w-1/2 flex flex-col px-6 sm:px-8 py-8">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-gray-900 to-black text-white px-4 py-5 rounded-xl mb-6 text-center md:text-left">
+          <h1 className="text-xl sm:text-2xl font-semibold">
+            Become a JB’s Supply Member
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-200 mt-1">
+            Business-only pricing, bundles, and payment flexibility.
+          </p>
+        </div>
+
+        {/* Features */}
         <ul className="text-xs sm:text-sm text-gray-700 mb-5 space-y-1 list-disc list-inside">
           <li>Create reusable product bundles</li>
           <li>Access member-only pricing & promotions</li>
@@ -37,6 +50,7 @@ const Register = ({ setCurrentView }: Props) => {
           <li>Priority business support</li>
         </ul>
 
+        {/* Form */}
         <form className="w-full flex flex-col gap-y-3" action={formAction}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
@@ -120,11 +134,11 @@ const Register = ({ setCurrentView }: Props) => {
           </SubmitButton>
         </form>
 
-        <p className="text-sm text-gray-600 mt-6 text-center">
+        <p className="text-sm text-gray-600 mt-6 text-center md:text-left">
           Already a member?{" "}
           <button
             onClick={() => setCurrentView(LOGIN_VIEW.SIGN_IN)}
-            className="underline font-medium"
+            className="underline font-medium text-gray-900 hover:text-gray-700"
           >
             Sign in
           </button>
