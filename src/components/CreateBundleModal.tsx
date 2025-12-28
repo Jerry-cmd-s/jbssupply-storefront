@@ -120,11 +120,12 @@ export default function CreateBundleModal({
   }
 
   /* ---------- PRICE HELPERS ---------- */
-  const formatMoney = (amountInCents: number, currency = "USD") =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-    }).format(amountInCents / 100)
+const formatMoney = (amountInCents: number, currency = "USD") =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+  }).format(amountInCents / 100)
+
 
   /* ---------- SUBTOTAL ---------- */
   const bundleTotal = useMemo(() => {
@@ -279,7 +280,8 @@ export default function CreateBundleModal({
             {/* TOTAL */}
             <div className="mt-6 border-t pt-4 flex justify-between text-lg font-bold">
               <span>Total</span>
-              <span>{formatMoney(bundleTotal, currencyCode)}</span>
+             <span>{formatMoney(bundleTotal, currencyCode)}</span>
+
             </div>
 
             <button
