@@ -68,8 +68,6 @@ export default function MyBundlesPage() {
 
       setBundles(result.bundles);
       calculateTotals(result.bundles);
-    } catch {
-      setBundles([]);
     } finally {
       setLoading(false);
     }
@@ -102,9 +100,7 @@ export default function MyBundlesPage() {
       });
 
       setBundleTotals(totals);
-    } catch {
-      // silent fail
-    }
+    } catch {}
   };
 
   /* ---------- ACTIONS ---------- */
@@ -151,9 +147,9 @@ export default function MyBundlesPage() {
               setEditBundle(null);
               setIsModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+            className="inline-flex items-center gap-2 rounded-lg bg-black px-5 py-2.5 text-base font-medium text-white hover:bg-gray-800"
           >
-            <Plus size={16} />
+            <Plus size={18} />
             New Bundle
           </button>
         </div>
@@ -164,7 +160,7 @@ export default function MyBundlesPage() {
             {[...Array(3)].map((_, i) => (
               <div
                 key={i}
-                className="h-28 animate-pulse rounded-xl bg-white"
+                className="h-32 animate-pulse rounded-xl bg-white"
               />
             ))}
           </div>
@@ -173,7 +169,7 @@ export default function MyBundlesPage() {
         {/* Empty */}
         {!loading && bundles.length === 0 && (
           <div className="rounded-xl bg-white p-16 text-center">
-            <Package className="mx-auto mb-4 text-gray-300" size={48} />
+            <Package className="mx-auto mb-4 text-gray-300" size={52} />
             <p className="font-medium text-gray-700">
               No bundles created yet
             </p>
@@ -188,7 +184,7 @@ export default function MyBundlesPage() {
           bundles.map((bundle) => (
             <div
               key={bundle.id}
-              className="rounded-xl bg-white p-5 shadow-sm"
+              className="rounded-xl bg-white p-6 shadow-sm"
             >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 {/* Info */}
@@ -197,19 +193,19 @@ export default function MyBundlesPage() {
                     {bundle.name}
                   </h3>
 
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                     <span className="flex items-center gap-1">
-                      <Calendar size={14} />
+                      <Calendar size={16} />
                       {new Date(bundle.created_at).toLocaleDateString()}
                     </span>
 
                     <span className="flex items-center gap-1">
-                      <Package size={14} />
+                      <Package size={16} />
                       {bundle.items.length} items
                     </span>
 
                     {bundleTotals[bundle.id] !== undefined && (
-                      <span className="rounded-full bg-green-100 px-2 py-0.5 font-medium text-green-700">
+                      <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700">
                         {formatMoney(bundleTotals[bundle.id])}
                       </span>
                     )}
@@ -221,12 +217,12 @@ export default function MyBundlesPage() {
                   <button
                     onClick={() => addToCart(bundle)}
                     disabled={busyId === bundle.id}
-                    className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
                   >
                     {busyId === bundle.id ? (
-                      <Loader2 size={14} className="animate-spin" />
+                      <Loader2 size={16} className="animate-spin" />
                     ) : (
-                      <ShoppingCart size={14} />
+                      <ShoppingCart size={16} />
                     )}
                     Cart
                   </button>
@@ -236,18 +232,18 @@ export default function MyBundlesPage() {
                       setEditBundle(bundle);
                       setIsModalOpen(true);
                     }}
-                    className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200"
+                    className="inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
                   >
-                    <Pencil size={14} />
+                    <Pencil size={16} />
                     Edit
                   </button>
 
                   <button
                     onClick={() => deleteBundle(bundle.id)}
                     disabled={busyId === bundle.id}
-                    className="inline-flex items-center gap-1 rounded-md bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 rounded-md bg-red-50 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-100 disabled:opacity-50"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={16} />
                   </button>
                 </div>
               </div>
