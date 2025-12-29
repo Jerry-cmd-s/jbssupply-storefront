@@ -21,16 +21,6 @@ const Register = ({ setCurrentView }: Props) => {
       
       {/* Left Image */}
       <div className="w-full md:w-1/2 flex justify-center items-center bg-gray-100 p-6">
-
-<div className="text-black px-4 py-5 rounded-xl mb-6 text-center md:text-left">
-          <h1 className="text-xl sm:text-2xl font-semibold">
-            Become a JB’s Supply Member
-          </h1>
-          <p className="text-xs sm:text-sm text-gray-200 mt-1">
-            Business-only pricing, bundles, and payment flexibility.
-          </p>
-        </div>
-
         <Image
           src="/hero.png"
           alt="JB'S Supply South Florida delivery network map"
@@ -43,7 +33,14 @@ const Register = ({ setCurrentView }: Props) => {
       {/* Right Form */}
       <div className="w-full md:w-1/2 flex flex-col px-6 sm:px-8 py-8">
         {/* Header */}
-        
+        <div className="text-black px-4 py-5 ">
+          <h1 className="text-xl sm:text-2xl font-semibold">
+            Become a JB’s Supply Member
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-200 mt-1">
+            Business-only pricing, bundles, and payment flexibility.
+          </p>
+        </div>
 
         {/* Features */}
         <ul className="text-xs sm:text-sm text-gray-700 mb-5 space-y-1 list-disc list-inside">
