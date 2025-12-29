@@ -15,7 +15,6 @@ import {
   ShoppingCart,
   Pencil,
   Calendar,
-  Package2,
   Trash2,
 } from "lucide-react";
 
@@ -35,10 +34,10 @@ type Bundle = {
 
 /* ---------- HELPERS ---------- */
 
-const formatMoney = (amount: number, currency = "USD") =>
+const formatMoney = (amount: number) =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency,
+    currency: "USD",
   }).format(amount);
 
 /* ---------- COMPONENT ---------- */
@@ -50,38 +49,35 @@ export default function MyBundlesPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editBundle, setEditBundle] = useState<Bundle | null>(null);
-  const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-  /* ---------- LOAD BUNDLES ---------- */
+  /* ---------- LOAD ---------- */
+
+  useEffect(() => {
+    loadBundles();
+  }, []);
 
   const loadBundles = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       const result = await getSavedBundlesAction();
-
       if (!result.success || !Array.isArray(result.bundles)) {
         setBundles([]);
         return;
       }
 
       setBundles(result.bundles);
-      await calculateBundleTotals(result.bundles);
-    } catch (err) {
-      console.error("Failed to load bundles", err);
+      calculateTotals(result.bundles);
+    } catch {
       setBundles([]);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadBundles();
-  }, []);
+  /* ---------- TOTALS ---------- */
 
-  /* ---------- CALCULATE SUBTOTALS ---------- */
-
-  const calculateBundleTotals = async (bundles: Bundle[]) => {
+  const calculateTotals = async (bundles: Bundle[]) => {
     try {
       const { products } = await sdk.store.product.list({
         limit: 300,
@@ -91,79 +87,62 @@ export default function MyBundlesPage() {
       const totals: Record<string, number> = {};
 
       bundles.forEach((bundle) => {
-        let total = 0;
-
-        bundle.items.forEach((item) => {
+        totals[bundle.id] = bundle.items.reduce((sum, item) => {
           const product = products.find((p) =>
             p.variants?.some((v) => v.id === item.variant_id)
           );
-
           const variant = product?.variants?.find(
             (v) => v.id === item.variant_id
           );
-
-          const amount =
+          const price =
             variant?.calculated_price?.calculated_amount ?? 0;
 
-          total += amount * item.quantity;
-        });
-
-        totals[bundle.id] = total;
+          return sum + price * item.quantity;
+        }, 0);
       });
 
       setBundleTotals(totals);
-    } catch (err) {
-      console.error("Failed to calculate bundle totals", err);
+    } catch {
+      // silent fail
     }
   };
 
   /* ---------- ACTIONS ---------- */
 
-  const handleAddToCart = async (bundle: Bundle) => {
-    setIsAddingToCart(bundle.id);
+  const addToCart = async (bundle: Bundle) => {
+    setBusyId(bundle.id);
     try {
-      const result = await addBundleToCartAction(bundle.items);
-      if (result.success) {
-        window.location.href = "/cart";
-      } else {
-        alert(result.error || "Failed to load bundle");
-      }
-    } catch {
-      alert("Unexpected error");
+      const res = await addBundleToCartAction(bundle.items);
+      if (res.success) window.location.href = "/cart";
     } finally {
-      setIsAddingToCart(null);
+      setBusyId(null);
     }
   };
 
-  const handleDelete = async (bundleId: string) => {
+  const deleteBundle = async (id: string) => {
     if (!confirm("Delete this bundle?")) return;
-
-    setIsDeleting(bundleId);
+    setBusyId(id);
     try {
-      const result = await deleteBundleAction(bundleId);
-      if (result.success) {
-        await loadBundles();
-      } else {
-        alert(result.error || "Failed to delete bundle");
-      }
-    } catch {
-      alert("Unexpected error");
+      await deleteBundleAction(id);
+      await loadBundles();
     } finally {
-      setIsDeleting(null);
+      setBusyId(null);
     }
   };
 
-  /* ---------- RENDER ---------- */
+  /* ---------- UI ---------- */
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+    <div className="min-h-screen bg-gray-50 px-4 py-10">
+      <div className="mx-auto max-w-6xl space-y-8">
         {/* Header */}
-        <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900">My Bundles</h1>
-            <p className="mt-2 text-gray-600">
-              Quickly load saved bundles into your cart
+            <h1 className="text-3xl font-semibold text-gray-900">
+              My Bundles
+            </h1>
+            <p className="text-sm text-gray-500">
+              Reuse saved bundles to order faster
             </p>
           </div>
 
@@ -172,134 +151,120 @@ export default function MyBundlesPage() {
               setEditBundle(null);
               setIsModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 rounded-full bg-black px-8 py-4 text-lg font-semibold text-white shadow-lg transition hover:bg-gray-800"
+            className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
           >
-            <Plus size={20} />
-            Create Bundle
+            <Plus size={16} />
+            New Bundle
           </button>
         </div>
 
         {/* Loading */}
         {loading && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
               <div
                 key={i}
-                className="h-44 animate-pulse rounded-2xl bg-white shadow"
+                className="h-28 animate-pulse rounded-xl bg-white"
               />
             ))}
           </div>
         )}
 
-        {/* Empty State */}
+        {/* Empty */}
         {!loading && bundles.length === 0 && (
-          <div className="flex flex-col items-center justify-center rounded-3xl bg-white py-24 shadow">
-            <Package size={72} className="text-gray-300" />
-            <p className="mt-6 text-xl font-medium text-gray-700">
-              No bundles yet
+          <div className="rounded-xl bg-white p-16 text-center">
+            <Package className="mx-auto mb-4 text-gray-300" size={48} />
+            <p className="font-medium text-gray-700">
+              No bundles created yet
             </p>
-            <p className="mt-2 text-gray-500">
-              Create your first bundle to speed up ordering
+            <p className="text-sm text-gray-500">
+              Create one to speed up ordering
             </p>
           </div>
         )}
 
-        {/* Bundle Cards */}
-        {!loading && bundles.length > 0 && (
-          <div className="grid grid-cols-1 gap-6">
-            {bundles.map((bundle) => (
-              <div
-                key={bundle.id}
-                className="rounded-2xl bg-white p-8 shadow-md transition hover:shadow-xl"
-              >
-                <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-                  {/* Info */}
-                  <div className="flex items-start gap-5">
-                    <div className="rounded-xl bg-gray-100 p-3">
-                      <Package2 size={36} className="text-gray-500" />
-                    </div>
+        {/* Bundles */}
+        {!loading &&
+          bundles.map((bundle) => (
+            <div
+              key={bundle.id}
+              className="rounded-xl bg-white p-5 shadow-sm"
+            >
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                {/* Info */}
+                <div className="space-y-1">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {bundle.name}
+                  </h3>
 
-                    <div>
-                      <h3 className="text-2xl font-bold text-gray-900">
-                        {bundle.name}
-                      </h3>
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <Calendar size={14} />
+                      {new Date(bundle.created_at).toLocaleDateString()}
+                    </span>
 
-                      <div className="mt-3 flex flex-wrap items-center gap-5 text-sm text-gray-600">
-                        <span className="flex items-center gap-2">
-                          <Calendar size={16} />
-                          {new Date(bundle.created_at).toLocaleDateString()}
-                        </span>
+                    <span className="flex items-center gap-1">
+                      <Package size={14} />
+                      {bundle.items.length} items
+                    </span>
 
-                        <span className="flex items-center gap-2">
-                          <Package size={16} />
-                          {bundle.items.length} items
-                        </span>
-
-                        {bundleTotals[bundle.id] !== undefined && (
-                          <span className="rounded-full bg-green-100 px-4 py-1 text-sm font-semibold text-green-700">
-                            Subtotal {formatMoney(bundleTotals[bundle.id])}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <button
-                      onClick={() => handleAddToCart(bundle)}
-                      disabled={isAddingToCart === bundle.id}
-                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-4 font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
-                    >
-                      {isAddingToCart === bundle.id ? (
-                        <Loader2 className="animate-spin" size={20} />
-                      ) : (
-                        <ShoppingCart size={20} />
-                      )}
-                      Load to Cart
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setEditBundle(bundle);
-                        setIsModalOpen(true);
-                      }}
-                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-gray-200 px-6 py-4 font-medium text-gray-800 transition hover:bg-gray-300"
-                    >
-                      <Pencil size={20} />
-                      Edit
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(bundle.id)}
-                      disabled={isDeleting === bundle.id}
-                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-100 px-6 py-4 font-medium text-red-600 transition hover:bg-red-200 disabled:opacity-50"
-                    >
-                      {isDeleting === bundle.id ? (
-                        <Loader2 className="animate-spin" size={20} />
-                      ) : (
-                        <Trash2 size={20} />
-                      )}
-                      Delete
-                    </button>
+                    {bundleTotals[bundle.id] !== undefined && (
+                      <span className="rounded-full bg-green-100 px-2 py-0.5 font-medium text-green-700">
+                        {formatMoney(bundleTotals[bundle.id])}
+                      </span>
+                    )}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
-      {/* Modal */}
-      <CreateBundleModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setEditBundle(null);
-          loadBundles();
-        }}
-        bundle={editBundle}
-      />
+                {/* Actions */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => addToCart(bundle)}
+                    disabled={busyId === bundle.id}
+                    className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {busyId === bundle.id ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <ShoppingCart size={14} />
+                    )}
+                    Cart
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setEditBundle(bundle);
+                      setIsModalOpen(true);
+                    }}
+                    className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200"
+                  >
+                    <Pencil size={14} />
+                    Edit
+                  </button>
+
+                  <button
+                    onClick={() => deleteBundle(bundle.id)}
+                    disabled={busyId === bundle.id}
+                    className="inline-flex items-center gap-1 rounded-md bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 disabled:opacity-50"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+
+        {/* Modal */}
+        <CreateBundleModal
+          isOpen={isModalOpen}
+          bundle={editBundle}
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditBundle(null);
+            loadBundles();
+          }}
+        />
+      </div>
     </div>
   );
 }
