@@ -17,7 +17,7 @@ const buttonVariants = {
 const Hero = () => {
   const [wordIndex, setWordIndex] = useState(0)
   const [showNextDay, setShowNextDay] = useState(false)
-  const words = ["Restaurants", "Salon & Spas", "Cafes", "Bars", "Office"]
+  const words = ["Restaurants", "Food Trucks", "Cafes", "Bars", "Offices"]
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -80,7 +80,7 @@ const Hero = () => {
           <motion.div variants={buttonVariants} initial="hidden" animate="visible" whileHover="hover">
           
 
-<Link href="/account">
+<Link href="/account/">
   <Button
     variant="secondary"
     size="large"
@@ -138,7 +138,7 @@ const MainContent = () => {
     },
     {
       title: "Reliability",
-      desc: "You show up on time and your products do what they’re supposed to do.", 
+      desc: "We show up on time and your products do what they’re supposed to do.", 
       icon: ShieldCheck,
     },
   ]
