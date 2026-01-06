@@ -29,6 +29,7 @@ type Bundle = {
   id: string;
   name: string;
   created_at: string;
+  delivery_day: number; // 1–28 (monthly delivery day)
   items: BundleItem[];
 };
 
@@ -39,6 +40,21 @@ const formatMoney = (amount: number) =>
     style: "currency",
     currency: "USD",
   }).format(amount);
+
+const getNextDeliveryDate = (deliveryDay: number) => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+
+  const candidate = new Date(year, month, deliveryDay);
+
+  // If delivery day already passed this month → next month
+  if (candidate < today) {
+    return new Date(year, month + 1, deliveryDay);
+  }
+
+  return candidate;
+};
 
 /* ---------- COMPONENT ---------- */
 
@@ -89,9 +105,11 @@ export default function MyBundlesPage() {
           const product = products.find((p) =>
             p.variants?.some((v) => v.id === item.variant_id)
           );
+
           const variant = product?.variants?.find(
             (v) => v.id === item.variant_id
           );
+
           const price =
             variant?.calculated_price?.calculated_amount ?? 0;
 
@@ -100,7 +118,9 @@ export default function MyBundlesPage() {
       });
 
       setBundleTotals(totals);
-    } catch {}
+    } catch {
+      // intentionally silent — totals are non-critical UI
+    }
   };
 
   /* ---------- ACTIONS ---------- */
@@ -138,7 +158,7 @@ export default function MyBundlesPage() {
               My Bundles
             </h1>
             <p className="text-sm text-gray-500">
-              Reuse saved bundles to order faster
+              Monthly bundles with scheduled delivery
             </p>
           </div>
 
@@ -174,81 +194,92 @@ export default function MyBundlesPage() {
               No bundles created yet
             </p>
             <p className="text-sm text-gray-500">
-              Create one to speed up ordering
+              Create one to automate monthly ordering
             </p>
           </div>
         )}
 
         {/* Bundles */}
         {!loading &&
-          bundles.map((bundle) => (
-            <div
-              key={bundle.id}
-              className="rounded-xl bg-white p-6 shadow-sm"
-            >
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                {/* Info */}
-                <div className="space-y-1">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {bundle.name}
-                  </h3>
+          bundles.map((bundle) => {
+            const nextDelivery = getNextDeliveryDate(
+              bundle.delivery_day
+            );
 
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <Calendar size={16} />
-                      {new Date(bundle.created_at).toLocaleDateString()}
-                    </span>
+            return (
+              <div
+                key={bundle.id}
+                className="rounded-xl bg-white p-6 shadow-sm"
+              >
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  {/* Info */}
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {bundle.name}
+                    </h3>
 
-                    <span className="flex items-center gap-1">
-                      <Package size={16} />
-                      {bundle.items.length} items
-                    </span>
-
-                    {bundleTotals[bundle.id] !== undefined && (
-                      <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700">
-                        {formatMoney(bundleTotals[bundle.id])}
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <Calendar size={16} />
+                        Next delivery:{" "}
+                        {nextDelivery.toLocaleDateString()}
                       </span>
-                    )}
+
+                      <span className="flex items-center gap-1">
+                        <Package size={16} />
+                        {bundle.items.length} items
+                      </span>
+
+                      <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                        Monthly • Day {bundle.delivery_day}
+                      </span>
+
+                      {bundleTotals[bundle.id] !== undefined && (
+                        <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700">
+                          {formatMoney(bundleTotals[bundle.id])}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => addToCart(bundle)}
+                      disabled={busyId === bundle.id}
+                      className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {busyId === bundle.id ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <ShoppingCart size={16} />
+                      )}
+                      Cart
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setEditBundle(bundle);
+                        setIsModalOpen(true);
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
+                    >
+                      <Pencil size={16} />
+                      Edit
+                    </button>
+
+                    <button
+                      onClick={() => deleteBundle(bundle.id)}
+                      disabled={busyId === bundle.id}
+                      className="inline-flex items-center gap-1.5 rounded-md bg-red-50 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-100 disabled:opacity-50"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </div>
-
-                {/* Actions */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => addToCart(bundle)}
-                    disabled={busyId === bundle.id}
-                    className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {busyId === bundle.id ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <ShoppingCart size={16} />
-                    )}
-                    Cart
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setEditBundle(bundle);
-                      setIsModalOpen(true);
-                    }}
-                    className="inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
-                  >
-                    <Pencil size={16} />
-                    Edit
-                  </button>
-
-                  <button
-                    onClick={() => deleteBundle(bundle.id)}
-                    disabled={busyId === bundle.id}
-                    className="inline-flex items-center gap-1.5 rounded-md bg-red-50 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-100 disabled:opacity-50"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
         {/* Modal */}
         <CreateBundleModal
