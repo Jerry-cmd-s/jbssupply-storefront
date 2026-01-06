@@ -21,22 +21,37 @@ type Bundle = {
   items: BundleItem[];
 };
 
-export async function saveBundleAction(name: string, items: BundleItem[]) {
+export async function saveBundleAction(
+  name: string,
+  items: BundleItem[],
+  delivery_day: number
+) {
   const headers = await getAuthHeaders();
+
+  if (delivery_day < 1 || delivery_day > 28) {
+    return { success: false, error: "Invalid delivery day" };
+  }
+
   try {
     const { customer } = await sdk.client.fetch("/store/customers/me", {
       headers,
     });
+
     if (!customer) {
       return { success: false, error: "No logged-in customer" };
     }
-    const existingBundles: Bundle[] = (customer.metadata?.bundles as Bundle[]) || [];
+
+    const existingBundles: Bundle[] =
+      (customer.metadata?.bundles as Bundle[]) || [];
+
     const newBundle: Bundle = {
       id: uuidv4(),
       name: name.trim(),
       items,
+      delivery_day,
       created_at: new Date().toISOString(),
     };
+
     await sdk.client.fetch("/store/customers/me", {
       method: "POST",
       headers,
@@ -47,13 +62,16 @@ export async function saveBundleAction(name: string, items: BundleItem[]) {
         },
       },
     });
+
     revalidatePath("/account/bundles");
+
     return { success: true, bundle: newBundle };
   } catch (err: any) {
     console.error("Save bundle action failed:", err);
     return { success: false, error: err.message || "Failed to save bundle" };
   }
 }
+
 
 export async function getSavedBundlesAction() {
   const headers = await getAuthHeaders();
