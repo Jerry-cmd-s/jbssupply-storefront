@@ -17,7 +17,6 @@ const Login = ({ setCurrentView }: Props) => {
 
   return (
     <div className="w-full max-w-5xl mx-auto my-8 flex flex-col md:flex-row bg-white rounded-2xl shadow-md overflow-hidden">
-      
       {/* Left Image */}
       <div className="w-full md:w-1/2 flex justify-center items-center bg-gray-100 p-6">
         <Image
@@ -34,6 +33,7 @@ const Login = ({ setCurrentView }: Props) => {
         <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-3 text-center md:text-left">
           Welcome Back
         </h1>
+
         <p className="text-center md:text-left text-sm sm:text-base text-gray-600 mb-8">
           Sign in to access an enhanced shopping experience.
         </p>
@@ -47,6 +47,7 @@ const Login = ({ setCurrentView }: Props) => {
             autoComplete="email"
             required
           />
+
           <Input
             label="Password"
             name="password"
@@ -55,9 +56,19 @@ const Login = ({ setCurrentView }: Props) => {
             required
           />
 
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setCurrentView(LOGIN_VIEW.RESET_PASSWORD)}
+              className="text-sm underline text-gray-700 hover:text-gray-900"
+            >
+              Forgot password?
+            </button>
+          </div>
+
           <ErrorMessage error={message} className="mt-2" />
 
-          <SubmitButton className="w-full mt-6 bg-black hover:bg-gray-900">
+          <SubmitButton className="w-full mt-4 bg-black hover:bg-gray-900">
             Sign In
           </SubmitButton>
         </form>
@@ -65,6 +76,7 @@ const Login = ({ setCurrentView }: Props) => {
         <p className="text-center md:text-left text-sm text-gray-600 mt-6">
           Not a member?{" "}
           <button
+            type="button"
             onClick={() => setCurrentView(LOGIN_VIEW.REGISTER)}
             className="underline font-medium text-gray-900 hover:text-gray-700"
           >
