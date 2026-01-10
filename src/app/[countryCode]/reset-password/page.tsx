@@ -46,7 +46,7 @@ export default function ResetPassword() {
       // Update the customer's password via Medusa SDK
       await sdk.auth.updateProvider("customer", "emailpass", { email, password }, token)
       alert("Password reset successfully!")
-      router.push("/account/login")
+      router.push("/account")
     } catch (err: any) {
       alert(`Couldn't reset password: ${err.message || "Unknown error"}`)
     } finally {
