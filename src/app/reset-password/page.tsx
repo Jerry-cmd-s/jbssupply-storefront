@@ -28,7 +28,7 @@ export default function ResetPasswordPage() {
     setEmail(e)
 
     // Remove sensitive params from URL
-    window.history.replaceState({}, "", "/app/reset-password")
+    window.history.replaceState({}, "", "/reset-password")
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
