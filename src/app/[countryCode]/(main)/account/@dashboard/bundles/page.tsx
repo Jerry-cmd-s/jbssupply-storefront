@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { sdk } from "@lib/config"
-import CreateBundleModal from "components/CreateBundleModal"
+import { useEffect, useState } from "react";
+import { sdk } from "@lib/config";
+import CreateBundleModal from "components/CreateBundleModal";
 import {
   getSavedBundlesAction,
   addBundleToCartAction,
   deleteBundleAction,
-} from "app/actions/bundleActions"
+} from "app/actions/bundleActions";
 import {
   Package,
   Plus,
@@ -16,24 +16,31 @@ import {
   Pencil,
   Calendar,
   Trash2,
-} from "lucide-react"
+} from "lucide-react";
 
 /* =====================
    Types
 ===================== */
 
 type BundleItem = {
-  variant_id: string
-  quantity: number
-}
+  variant_id: string;
+  quantity: number;
+};
+
+type DeliverySchedule = {
+  interval_type: "months";
+  interval_count: number;
+  day_of_month: number;
+  start_date: string;
+};
 
 type Bundle = {
-  id: string
-  name: string
-  created_at: string
-  delivery_day: number | string | null
-  items: BundleItem[]
-}
+  id: string;
+  name: string;
+  created_at: string;
+  items: BundleItem[];
+  delivery_schedule: DeliverySchedule;
+};
 
 /* =====================
    Helpers
@@ -43,84 +50,76 @@ const formatMoney = (amount: number) =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-  }).format(amount)
+  }).format(amount);
 
 /**
- * Always returns either a valid Date or null
+ * Calculate next delivery date based on:
+ * - every X months
+ * - day of month (1–28)
+ * - start date
  */
 const getNextDeliveryDate = (
-  deliveryDayRaw: number | string | null
+  schedule: DeliverySchedule
 ): Date | null => {
-  const deliveryDay = Number(deliveryDayRaw)
+  if (!schedule) return null;
 
-  if (!Number.isInteger(deliveryDay) || deliveryDay < 1 || deliveryDay > 28) {
-    return null
+  const { interval_count, day_of_month, start_date } = schedule;
+
+  const start = new Date(start_date);
+  if (isNaN(start.getTime())) return null;
+
+  const today = new Date();
+  let current = new Date(start);
+
+  // Normalize day
+  current.setDate(
+    Math.min(day_of_month, 28)
+  );
+
+  while (current < today) {
+    current.setMonth(current.getMonth() + interval_count);
   }
 
-  const today = new Date()
-  const year = today.getFullYear()
-  const month = today.getMonth()
-
-  const daysInMonth = (y: number, m: number) =>
-    new Date(y, m + 1, 0).getDate()
-
-  let day = Math.min(deliveryDay, daysInMonth(year, month))
-  let candidate = new Date(year, month, day)
-
-  if (candidate < today) {
-    const nextMonth = month + 1
-    const nextYear = nextMonth > 11 ? year + 1 : year
-    const normalizedMonth = nextMonth % 12
-
-    day = Math.min(
-      deliveryDay,
-      daysInMonth(nextYear, normalizedMonth)
-    )
-
-    candidate = new Date(nextYear, normalizedMonth, day)
-  }
-
-  return isNaN(candidate.getTime()) ? null : candidate
-}
+  return isNaN(current.getTime()) ? null : current;
+};
 
 /* =====================
    Component
 ===================== */
 
 export default function MyBundlesPage() {
-  const [bundles, setBundles] = useState<Bundle[]>([])
-  const [bundleTotals, setBundleTotals] = useState<Record<string, number>>({})
-  const [loading, setLoading] = useState(true)
+  const [bundles, setBundles] = useState<Bundle[]>([]);
+  const [bundleTotals, setBundleTotals] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
 
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingBundle, setEditingBundle] = useState<Bundle | null>(null)
-  const [busyBundleId, setBusyBundleId] = useState<string | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingBundle, setEditingBundle] = useState<Bundle | null>(null);
+  const [busyBundleId, setBusyBundleId] = useState<string | null>(null);
 
   /* =====================
      Load Bundles
   ===================== */
 
   useEffect(() => {
-    loadBundles()
-  }, [])
+    loadBundles();
+  }, []);
 
   const loadBundles = async () => {
-    setLoading(true)
-
+    setLoading(true);
     try {
-      const res = await getSavedBundlesAction()
+      const res = await getSavedBundlesAction();
 
       if (!res.success || !Array.isArray(res.bundles)) {
-        setBundles([])
-        return
+        setBundles([]);
+        return;
       }
 
-      setBundles(res.bundles)
-      calculateTotals(res.bundles)
+      setBundles(res.bundles);
+      calculateTotals(res.bundles);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   /* =====================
      Calculate Totals
@@ -131,58 +130,58 @@ export default function MyBundlesPage() {
       const { products } = await sdk.store.product.list({
         limit: 300,
         fields: "id,variants.id,variants.calculated_price",
-      })
+      });
 
-      const totals: Record<string, number> = {}
+      const totals: Record<string, number> = {};
 
       for (const bundle of bundles) {
         totals[bundle.id] = bundle.items.reduce((sum, item) => {
           const product = products.find((p) =>
             p.variants?.some((v) => v.id === item.variant_id)
-          )
+          );
 
           const variant = product?.variants?.find(
             (v) => v.id === item.variant_id
-          )
+          );
 
           const price =
-            variant?.calculated_price?.calculated_amount ?? 0
+            variant?.calculated_price?.calculated_amount ?? 0;
 
-          return sum + price * item.quantity
-        }, 0)
+          return sum + price * item.quantity;
+        }, 0);
       }
 
-      setBundleTotals(totals)
+      setBundleTotals(totals);
     } catch {
       // non-critical UI
     }
-  }
+  };
 
   /* =====================
      Actions
   ===================== */
 
   const handleAddToCart = async (bundle: Bundle) => {
-    setBusyBundleId(bundle.id)
+    setBusyBundleId(bundle.id);
     try {
-      const res = await addBundleToCartAction(bundle.items)
-      if (res.success) window.location.href = "/cart"
+      const res = await addBundleToCartAction(bundle.items);
+      if (res.success) window.location.href = "/cart";
     } finally {
-      setBusyBundleId(null)
+      setBusyBundleId(null);
     }
-  }
+  };
 
   const handleDeleteBundle = async (bundleId: string) => {
-    if (!confirm("Delete this bundle?")) return
-    setBusyBundleId(bundleId)
+    if (!confirm("Delete this bundle?")) return;
 
+    setBusyBundleId(bundleId);
     try {
-      await deleteBundleAction(bundleId)
-      await loadBundles()
+      await deleteBundleAction(bundleId);
+      await loadBundles();
     } finally {
-      setBusyBundleId(null)
+      setBusyBundleId(null);
     }
-  }
+  };
 
   /* =====================
      UI
@@ -198,14 +197,14 @@ export default function MyBundlesPage() {
               My Bundles
             </h1>
             <p className="text-sm text-gray-500">
-              Monthly bundles with scheduled delivery
+              Automated monthly bundle deliveries
             </p>
           </div>
 
           <button
             onClick={() => {
-              setEditingBundle(null)
-              setIsModalOpen(true)
+              setEditingBundle(null);
+              setIsModalOpen(true);
             }}
             className="inline-flex items-center gap-2 rounded-lg bg-black px-5 py-2.5 text-white hover:bg-gray-800"
           >
@@ -229,7 +228,9 @@ export default function MyBundlesPage() {
         {/* Bundles */}
         {!loading &&
           bundles.map((bundle) => {
-            const nextDelivery = getNextDeliveryDate(bundle.delivery_day)
+            const nextDelivery = getNextDeliveryDate(
+              bundle.delivery_schedule
+            );
 
             return (
               <div
@@ -257,6 +258,14 @@ export default function MyBundlesPage() {
                         {bundle.items.length} items
                       </span>
 
+                      <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                        Every {bundle.delivery_schedule.interval_count} month
+                        {bundle.delivery_schedule.interval_count > 1
+                          ? "s"
+                          : ""}{" "}
+                        • Day {bundle.delivery_schedule.day_of_month}
+                      </span>
+
                       {bundleTotals[bundle.id] !== undefined && (
                         <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700">
                           {formatMoney(bundleTotals[bundle.id])}
@@ -282,8 +291,8 @@ export default function MyBundlesPage() {
 
                     <button
                       onClick={() => {
-                        setEditingBundle(bundle)
-                        setIsModalOpen(true)
+                        setEditingBundle(bundle);
+                        setIsModalOpen(true);
                       }}
                       className="inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-4 py-2 text-sm"
                     >
@@ -301,19 +310,19 @@ export default function MyBundlesPage() {
                   </div>
                 </div>
               </div>
-            )
+            );
           })}
 
         <CreateBundleModal
           isOpen={isModalOpen}
           bundle={editingBundle}
           onClose={() => {
-            setIsModalOpen(false)
-            setEditingBundle(null)
-            loadBundles()
+            setIsModalOpen(false);
+            setEditingBundle(null);
+            loadBundles();
           }}
         />
       </div>
     </div>
-  )
+  );
 }
