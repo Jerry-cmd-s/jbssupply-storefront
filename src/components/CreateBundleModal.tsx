@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { HttpTypes } from "@medusajs/types";
@@ -8,6 +9,10 @@ import {
   updateBundleAction,
 } from "app/actions/bundleActions";
 
+/* =====================
+   Types
+===================== */
+
 type BundleItem = {
   product_id: string;
   variant_id: string;
@@ -15,10 +20,9 @@ type BundleItem = {
 };
 
 type DeliverySchedule = {
-  interval_type: "days" | "weeks" | "months";
+  interval_type: "months";
   interval_count: number;
-  day_of_month?: number; // for monthly
-  weekday?: number; // for weekly
+  day_of_month: number;
   start_date: string;
 };
 
@@ -35,6 +39,10 @@ type Props = {
   bundle?: Bundle | null;
 };
 
+/* =====================
+   Component
+===================== */
+
 export default function CreateBundleModal({
   isOpen,
   onClose,
@@ -44,51 +52,56 @@ export default function CreateBundleModal({
   const [selectedItems, setSelectedItems] = useState<BundleItem[]>([]);
   const [bundleName, setBundleName] = useState("");
 
-  // New state for flexible delivery
-  const [intervalType, setIntervalType] = useState<DeliverySchedule["interval_type"]>("months");
-  const [intervalCount, setIntervalCount] = useState(1);
-  const [dayOfMonth, setDayOfMonth] = useState(1);
-  const [weekday, setWeekday] = useState(1);
-  const [startDate, setStartDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  /* Delivery Schedule (Monthly Only) */
+  const [intervalCount, setIntervalCount] = useState(1); // every X months
+  const [dayOfMonth, setDayOfMonth] = useState(1); // day in month
+  const [startDate, setStartDate] = useState(
+    new Date().toISOString().slice(0, 10)
+  );
 
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
-  /* ---------- PREFILL ON OPEN ---------- */
+  /* =====================
+     Prefill on Open
+  ===================== */
+
   useEffect(() => {
     if (!isOpen) return;
 
     if (bundle) {
       setBundleName(bundle.name);
       setSelectedItems(bundle.items);
+
       const schedule = bundle.delivery_schedule;
-      setIntervalType(schedule.interval_type);
       setIntervalCount(schedule.interval_count);
-      setDayOfMonth(schedule.day_of_month ?? 1);
-      setWeekday(schedule.weekday ?? 1);
+      setDayOfMonth(schedule.day_of_month);
       setStartDate(schedule.start_date);
     } else {
       setBundleName("");
       setSelectedItems([]);
-      setIntervalType("months");
       setIntervalCount(1);
       setDayOfMonth(1);
-      setWeekday(1);
       setStartDate(new Date().toISOString().slice(0, 10));
     }
 
     setSearchQuery("");
   }, [isOpen, bundle]);
 
-  /* ---------- LOAD PRODUCTS ---------- */
+  /* =====================
+     Load Products
+  ===================== */
+
   useEffect(() => {
     if (!isOpen) return;
+
     const loadProducts = async () => {
       const { products } = await sdk.store.product.list({
         limit: 200,
         fields:
           "id,title,thumbnail,variants.id,variants.title,variants.calculated_price",
       });
+
       setProducts(
         products.filter(
           (p): p is HttpTypes.StoreProduct =>
@@ -96,12 +109,16 @@ export default function CreateBundleModal({
         )
       );
     };
+
     loadProducts().catch(() =>
       alert("Failed to load products. Please try again.")
     );
   }, [isOpen]);
 
-  /* ---------- SEARCH ---------- */
+  /* =====================
+     Search
+  ===================== */
+
   const filteredProducts = useMemo(() => {
     if (!searchQuery.trim()) return products;
     const q = searchQuery.toLowerCase();
@@ -112,7 +129,10 @@ export default function CreateBundleModal({
     );
   }, [products, searchQuery]);
 
-  /* ---------- ADD / UPDATE ITEMS ---------- */
+  /* =====================
+     Item Management
+  ===================== */
+
   const addItem = (product: HttpTypes.StoreProduct, variantId: string) => {
     setSelectedItems((prev) => {
       const existing = prev.find((i) => i.variant_id === variantId);
@@ -146,14 +166,16 @@ export default function CreateBundleModal({
     );
   };
 
-  /* ---------- MONEY ---------- */
+  /* =====================
+     Pricing
+  ===================== */
+
   const formatMoney = (amount: number, currency = "USD") =>
     new Intl.NumberFormat("en-US", {
       style: "currency",
       currency,
     }).format(amount);
 
-  /* ---------- TOTAL ---------- */
   const bundleTotal = useMemo(() => {
     return selectedItems.reduce((total, item) => {
       const product = products.find((p) => p.id === item.product_id);
@@ -169,26 +191,30 @@ export default function CreateBundleModal({
     products[0]?.variants?.[0]?.calculated_price?.currency_code?.toUpperCase() ??
     "USD";
 
-  /* ---------- SAVE ---------- */
+  /* =====================
+     Save Bundle
+  ===================== */
+
   const handleSave = async () => {
     if (!bundleName.trim()) {
       alert("Please enter a bundle name.");
       return;
     }
+
     if (!selectedItems.length) {
       alert("Please add at least one product.");
       return;
     }
 
     setLoading(true);
+
     try {
       const delivery_schedule: DeliverySchedule = {
-        interval_type: intervalType,
+        interval_type: "months",
         interval_count: intervalCount,
+        day_of_month: dayOfMonth,
         start_date: startDate,
       };
-      if (intervalType === "months") delivery_schedule.day_of_month = dayOfMonth;
-      if (intervalType === "weeks") delivery_schedule.weekday = weekday;
 
       const result = bundle
         ? await updateBundleAction(
@@ -212,21 +238,28 @@ export default function CreateBundleModal({
 
   if (!isOpen) return null;
 
-  /* ---------- RENDER ---------- */
+  /* =====================
+     Render
+  ===================== */
+
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center">
       <div className="w-full h-[95vh] sm:h-auto sm:max-w-7xl bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden">
-        {/* HEADER */}
+        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <h2 className="text-xl font-bold">
             {bundle ? "Edit Bundle" : "Create Bundle"}
           </h2>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100">
+          <button
+            onClick={onClose}
+            className="p-2 rounded-full hover:bg-gray-100"
+          >
             <X />
           </button>
         </div>
+
         <div className="flex flex-col sm:flex-row flex-1 overflow-hidden">
-          {/* PRODUCT LIST */}
+          {/* Products */}
           <div className="flex-1 overflow-y-auto px-6 py-4">
             <input
               value={searchQuery}
@@ -234,6 +267,7 @@ export default function CreateBundleModal({
               placeholder="Search products..."
               className="w-full mb-4 rounded-xl border px-4 py-3"
             />
+
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               {filteredProducts.map((product) => {
                 const variant = product.variants![0];
@@ -242,6 +276,7 @@ export default function CreateBundleModal({
                 const isSelected = selectedItems.some(
                   (i) => i.variant_id === variant.id
                 );
+
                 return (
                   <button
                     key={product.id}
@@ -261,6 +296,7 @@ export default function CreateBundleModal({
                         />
                       )}
                     </div>
+
                     <p className="text-sm font-medium line-clamp-2">
                       {product.title}
                     </p>
@@ -275,7 +311,8 @@ export default function CreateBundleModal({
               })}
             </div>
           </div>
-          {/* BUNDLE SUMMARY */}
+
+          {/* Summary */}
           <div className="bg-gray-50 border-l px-6 py-4 w-full sm:w-96 overflow-y-auto">
             <input
               value={bundleName}
@@ -284,81 +321,59 @@ export default function CreateBundleModal({
               className="w-full mb-4 rounded-xl border px-4 py-3"
             />
 
-            {/* Flexible Delivery */}
-            <div className="mb-4 space-y-2">
-              <label className="block text-sm font-semibold mb-1">
+            {/* Delivery Schedule */}
+            <div className="mb-4 space-y-3">
+              <label className="block text-sm font-semibold">
                 Delivery schedule
               </label>
 
               <select
-                value={intervalType}
-                onChange={(e) => setIntervalType(e.target.value as any)}
-                className="w-full rounded-xl border px-4 py-3 bg-white"
-              >
-                <option value="days">Every X days</option>
-                <option value="weeks">Every X weeks</option>
-                <option value="months">Every X months</option>
-              </select>
-
-              <input
-                type="number"
-                min={1}
                 value={intervalCount}
                 onChange={(e) => setIntervalCount(Number(e.target.value))}
                 className="w-full rounded-xl border px-4 py-3 bg-white"
-                placeholder="Interval count"
-              />
+              >
+                {[1, 2, 3, 4, 6, 12].map((m) => (
+                  <option key={m} value={m}>
+                    Every {m} month{m > 1 ? "s" : ""}
+                  </option>
+                ))}
+              </select>
 
-              <label className="block text-xs text-gray-500">
-                Start date
-              </label>
+              <select
+                value={dayOfMonth}
+                onChange={(e) => setDayOfMonth(Number(e.target.value))}
+                className="w-full rounded-xl border px-4 py-3 bg-white"
+              >
+                {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
+                  <option key={day} value={day}>
+                    {day}
+                    {day === 1
+                      ? "st"
+                      : day === 2
+                      ? "nd"
+                      : day === 3
+                      ? "rd"
+                      : "th"}{" "}
+                    of the month
+                  </option>
+                ))}
+              </select>
+
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 className="w-full rounded-xl border px-4 py-3 bg-white"
               />
-
-              {intervalType === "months" && (
-                <select
-                  value={dayOfMonth}
-                  onChange={(e) => setDayOfMonth(Number(e.target.value))}
-                  className="w-full rounded-xl border px-4 py-3 bg-white"
-                >
-                  {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
-                    <option key={day} value={day}>
-                      {day}
-                      {day === 1
-                        ? "st"
-                        : day === 2
-                        ? "nd"
-                        : day === 3
-                        ? "rd"
-                        : "th"}{" "}
-                      of the month
-                    </option>
-                  ))}
-                </select>
-              )}
-
-              {intervalType === "weeks" && (
-                <select
-                  value={weekday}
-                  onChange={(e) => setWeekday(Number(e.target.value))}
-                  className="w-full rounded-xl border px-4 py-3 bg-white"
-                >
-                  {["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].map((day, idx) => (
-                    <option key={idx} value={idx+1}>{day}</option>
-                  ))}
-                </select>
-              )}
             </div>
 
+            {/* Selected Items */}
             <div className="space-y-3">
               {selectedItems.map((item) => {
                 const product = products.find(
                   (p) => p.id === item.product_id
                 );
+
                 return (
                   <div
                     key={item.variant_id}
@@ -393,10 +408,9 @@ export default function CreateBundleModal({
 
             <div className="mt-4 pt-4 border-t flex justify-between font-bold">
               <span>Total</span>
-              <span>
-                {formatMoney(bundleTotal, currencyCode)}
-              </span>
+              <span>{formatMoney(bundleTotal, currencyCode)}</span>
             </div>
+
             <button
               onClick={handleSave}
               disabled={loading}
