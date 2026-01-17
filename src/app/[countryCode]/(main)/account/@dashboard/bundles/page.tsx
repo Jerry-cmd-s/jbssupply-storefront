@@ -31,7 +31,7 @@ type Bundle = {
   id: string
   name: string
   created_at: string
-  delivery_day: number // monthly day (1–28)
+  delivery_day: number | string | null
   items: BundleItem[]
 }
 
@@ -45,7 +45,18 @@ const formatMoney = (amount: number) =>
     currency: "USD",
   }).format(amount)
 
-const getNextDeliveryDate = (deliveryDay: number): Date => {
+/**
+ * Always returns either a valid Date or null
+ */
+const getNextDeliveryDate = (
+  deliveryDayRaw: number | string | null
+): Date | null => {
+  const deliveryDay = Number(deliveryDayRaw)
+
+  if (!Number.isInteger(deliveryDay) || deliveryDay < 1 || deliveryDay > 28) {
+    return null
+  }
+
   const today = new Date()
   const year = today.getFullYear()
   const month = today.getMonth()
@@ -69,7 +80,7 @@ const getNextDeliveryDate = (deliveryDay: number): Date => {
     candidate = new Date(nextYear, normalizedMonth, day)
   }
 
-  return candidate
+  return isNaN(candidate.getTime()) ? null : candidate
 }
 
 /* =====================
@@ -143,7 +154,7 @@ export default function MyBundlesPage() {
 
       setBundleTotals(totals)
     } catch {
-      // Totals are non-blocking UI data
+      // non-critical UI
     }
   }
 
@@ -153,7 +164,6 @@ export default function MyBundlesPage() {
 
   const handleAddToCart = async (bundle: Bundle) => {
     setBusyBundleId(bundle.id)
-
     try {
       const res = await addBundleToCartAction(bundle.items)
       if (res.success) window.location.href = "/cart"
@@ -164,7 +174,6 @@ export default function MyBundlesPage() {
 
   const handleDeleteBundle = async (bundleId: string) => {
     if (!confirm("Delete this bundle?")) return
-
     setBusyBundleId(bundleId)
 
     try {
@@ -198,7 +207,7 @@ export default function MyBundlesPage() {
               setEditingBundle(null)
               setIsModalOpen(true)
             }}
-            className="inline-flex items-center gap-2 rounded-lg bg-black px-5 py-2.5 text-base font-medium text-white hover:bg-gray-800"
+            className="inline-flex items-center gap-2 rounded-lg bg-black px-5 py-2.5 text-white hover:bg-gray-800"
           >
             <Plus size={18} />
             New Bundle
@@ -217,19 +226,6 @@ export default function MyBundlesPage() {
           </div>
         )}
 
-        {/* Empty */}
-        {!loading && bundles.length === 0 && (
-          <div className="rounded-xl bg-white p-16 text-center">
-            <Package size={52} className="mx-auto mb-4 text-gray-300" />
-            <p className="font-medium text-gray-700">
-              No bundles created yet
-            </p>
-            <p className="text-sm text-gray-500">
-              Create one to automate monthly ordering
-            </p>
-          </div>
-        )}
-
         {/* Bundles */}
         {!loading &&
           bundles.map((bundle) => {
@@ -240,27 +236,25 @@ export default function MyBundlesPage() {
                 key={bundle.id}
                 className="rounded-xl bg-white p-6 shadow-sm"
               >
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
                   {/* Info */}
                   <div className="space-y-1">
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-lg font-semibold">
                       {bundle.name}
                     </h3>
 
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                    <div className="flex flex-wrap gap-4 text-sm text-gray-500">
                       <span className="flex items-center gap-1">
                         <Calendar size={16} />
-                        Next delivery:{" "}
-                        {nextDelivery.toLocaleDateString()}
+                        Next delivery:&nbsp;
+                        {nextDelivery
+                          ? nextDelivery.toLocaleDateString()
+                          : "Not scheduled"}
                       </span>
 
                       <span className="flex items-center gap-1">
                         <Package size={16} />
                         {bundle.items.length} items
-                      </span>
-
-                      <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
-                        Monthly • Day {bundle.delivery_day}
                       </span>
 
                       {bundleTotals[bundle.id] !== undefined && (
@@ -276,7 +270,7 @@ export default function MyBundlesPage() {
                     <button
                       onClick={() => handleAddToCart(bundle)}
                       disabled={busyBundleId === bundle.id}
-                      className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm text-white disabled:opacity-50"
                     >
                       {busyBundleId === bundle.id ? (
                         <Loader2 size={16} className="animate-spin" />
@@ -291,7 +285,7 @@ export default function MyBundlesPage() {
                         setEditingBundle(bundle)
                         setIsModalOpen(true)
                       }}
-                      className="inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
+                      className="inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-4 py-2 text-sm"
                     >
                       <Pencil size={16} />
                       Edit
@@ -300,7 +294,7 @@ export default function MyBundlesPage() {
                     <button
                       onClick={() => handleDeleteBundle(bundle.id)}
                       disabled={busyBundleId === bundle.id}
-                      className="inline-flex items-center gap-1.5 rounded-md bg-red-50 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-100 disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 rounded-md bg-red-50 px-4 py-2 text-sm text-red-600 disabled:opacity-50"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -310,7 +304,6 @@ export default function MyBundlesPage() {
             )
           })}
 
-        {/* Modal */}
         <CreateBundleModal
           isOpen={isModalOpen}
           bundle={editingBundle}
