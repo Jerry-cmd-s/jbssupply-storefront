@@ -73,11 +73,11 @@ const Hero = () => {
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
           <motion.div variants={buttonVariants} initial="hidden" animate="visible">
-           <link href="/account/components/register">  
+          
             <Button  variant="primary" size="medium" className="rounded-2xl shadow-lg px-10 py-5 bg-red-900 text-white text-lg font-medium font-calibri">
               Get Started
             </Button> 
-            </link >
+           
           </motion.div>
 
           <motion.div variants={buttonVariants} initial="hidden" animate="visible" whileHover="hover">
