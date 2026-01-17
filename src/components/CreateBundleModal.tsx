@@ -14,11 +14,19 @@ type BundleItem = {
   quantity: number;
 };
 
+type DeliverySchedule = {
+  interval_type: "days" | "weeks" | "months";
+  interval_count: number;
+  day_of_month?: number; // for monthly
+  weekday?: number; // for weekly
+  start_date: string;
+};
+
 type Bundle = {
   id: string;
   name: string;
   items: BundleItem[];
-  delivery_day: number;
+  delivery_schedule: DeliverySchedule;
 };
 
 type Props = {
@@ -35,22 +43,40 @@ export default function CreateBundleModal({
   const [products, setProducts] = useState<HttpTypes.StoreProduct[]>([]);
   const [selectedItems, setSelectedItems] = useState<BundleItem[]>([]);
   const [bundleName, setBundleName] = useState("");
-  const [deliveryDay, setDeliveryDay] = useState<number>(1);
+
+  // New state for flexible delivery
+  const [intervalType, setIntervalType] = useState<DeliverySchedule["interval_type"]>("months");
+  const [intervalCount, setIntervalCount] = useState(1);
+  const [dayOfMonth, setDayOfMonth] = useState(1);
+  const [weekday, setWeekday] = useState(1);
+  const [startDate, setStartDate] = useState<string>(new Date().toISOString().slice(0, 10));
+
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
   /* ---------- PREFILL ON OPEN ---------- */
   useEffect(() => {
     if (!isOpen) return;
+
     if (bundle) {
       setBundleName(bundle.name);
       setSelectedItems(bundle.items);
-      setDeliveryDay(bundle.delivery_day ?? 1);
+      const schedule = bundle.delivery_schedule;
+      setIntervalType(schedule.interval_type);
+      setIntervalCount(schedule.interval_count);
+      setDayOfMonth(schedule.day_of_month ?? 1);
+      setWeekday(schedule.weekday ?? 1);
+      setStartDate(schedule.start_date);
     } else {
       setBundleName("");
       setSelectedItems([]);
-      setDeliveryDay(1);
+      setIntervalType("months");
+      setIntervalCount(1);
+      setDayOfMonth(1);
+      setWeekday(1);
+      setStartDate(new Date().toISOString().slice(0, 10));
     }
+
     setSearchQuery("");
   }, [isOpen, bundle]);
 
@@ -153,20 +179,30 @@ export default function CreateBundleModal({
       alert("Please add at least one product.");
       return;
     }
+
     setLoading(true);
     try {
+      const delivery_schedule: DeliverySchedule = {
+        interval_type: intervalType,
+        interval_count: intervalCount,
+        start_date: startDate,
+      };
+      if (intervalType === "months") delivery_schedule.day_of_month = dayOfMonth;
+      if (intervalType === "weeks") delivery_schedule.weekday = weekday;
+
       const result = bundle
         ? await updateBundleAction(
             bundle.id,
             bundleName.trim(),
             selectedItems,
-            deliveryDay
+            delivery_schedule
           )
         : await saveBundleAction(
             bundleName.trim(),
             selectedItems,
-            deliveryDay
+            delivery_schedule
           );
+
       if (result.success) onClose();
       else alert(result.error || "Failed to save bundle.");
     } finally {
@@ -247,19 +283,49 @@ export default function CreateBundleModal({
               placeholder="Bundle name"
               className="w-full mb-4 rounded-xl border px-4 py-3"
             />
-            <div className="mb-4">
+
+            {/* Flexible Delivery */}
+            <div className="mb-4 space-y-2">
               <label className="block text-sm font-semibold mb-1">
-                Monthly delivery day
+                Delivery schedule
               </label>
+
               <select
-                value={deliveryDay}
-                onChange={(e) =>
-                  setDeliveryDay(Number(e.target.value))
-                }
+                value={intervalType}
+                onChange={(e) => setIntervalType(e.target.value as any)}
                 className="w-full rounded-xl border px-4 py-3 bg-white"
               >
-                {Array.from({ length: 28 }, (_, i) => i + 1).map(
-                  (day) => (
+                <option value="days">Every X days</option>
+                <option value="weeks">Every X weeks</option>
+                <option value="months">Every X months</option>
+              </select>
+
+              <input
+                type="number"
+                min={1}
+                value={intervalCount}
+                onChange={(e) => setIntervalCount(Number(e.target.value))}
+                className="w-full rounded-xl border px-4 py-3 bg-white"
+                placeholder="Interval count"
+              />
+
+              <label className="block text-xs text-gray-500">
+                Start date
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full rounded-xl border px-4 py-3 bg-white"
+              />
+
+              {intervalType === "months" && (
+                <select
+                  value={dayOfMonth}
+                  onChange={(e) => setDayOfMonth(Number(e.target.value))}
+                  className="w-full rounded-xl border px-4 py-3 bg-white"
+                >
+                  {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
                     <option key={day} value={day}>
                       {day}
                       {day === 1
@@ -271,13 +337,23 @@ export default function CreateBundleModal({
                         : "th"}{" "}
                       of the month
                     </option>
-                  )
-                )}
-              </select>
-              <p className="mt-1 text-xs text-gray-500">
-                Bundles with the same delivery day ship together.
-              </p>
+                  ))}
+                </select>
+              )}
+
+              {intervalType === "weeks" && (
+                <select
+                  value={weekday}
+                  onChange={(e) => setWeekday(Number(e.target.value))}
+                  className="w-full rounded-xl border px-4 py-3 bg-white"
+                >
+                  {["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].map((day, idx) => (
+                    <option key={idx} value={idx+1}>{day}</option>
+                  ))}
+                </select>
+              )}
             </div>
+
             <div className="space-y-3">
               {selectedItems.map((item) => {
                 const product = products.find(
@@ -314,6 +390,7 @@ export default function CreateBundleModal({
                 );
               })}
             </div>
+
             <div className="mt-4 pt-4 border-t flex justify-between font-bold">
               <span>Total</span>
               <span>
