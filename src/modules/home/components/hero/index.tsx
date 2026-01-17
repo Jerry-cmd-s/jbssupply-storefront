@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
 import { ShieldCheck, Zap, PackageCheck } from "lucide-react"
 import Link from "next/link"
+import { LOGIN_VIEW } from "@modules/account/templates/login-template"
 // animations
 const wordVariants = { enter: { opacity: 0, y: 20 }, center: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -20 } }
 const secondaryTextVariants = { enter: { opacity: 0, y: 10 }, center: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -10 } }
@@ -72,9 +73,11 @@ const Hero = () => {
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
           <motion.div variants={buttonVariants} initial="hidden" animate="visible">
-            <Button variant="primary" size="medium" className="rounded-2xl shadow-lg px-10 py-5 bg-red-900 text-white text-lg font-medium font-calibri">
-              Shop Bundles
-            </Button>
+           <link href="/account/components/register">  
+            <Button  variant="primary" size="medium" className="rounded-2xl shadow-lg px-10 py-5 bg-red-900 text-white text-lg font-medium font-calibri">
+              Get Started
+            </Button> 
+            </link >
           </motion.div>
 
           <motion.div variants={buttonVariants} initial="hidden" animate="visible" whileHover="hover">
