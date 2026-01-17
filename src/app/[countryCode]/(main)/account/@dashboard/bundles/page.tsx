@@ -1,13 +1,13 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { sdk } from "@lib/config";
-import CreateBundleModal from "components/CreateBundleModal";
+import { useEffect, useState } from "react"
+import { sdk } from "@lib/config"
+import CreateBundleModal from "components/CreateBundleModal"
 import {
   getSavedBundlesAction,
   addBundleToCartAction,
   deleteBundleAction,
-} from "app/actions/bundleActions";
+} from "app/actions/bundleActions"
 import {
   Package,
   Plus,
@@ -16,137 +16,168 @@ import {
   Pencil,
   Calendar,
   Trash2,
-} from "lucide-react";
+} from "lucide-react"
 
-/* ---------- TYPES ---------- */
+/* =====================
+   Types
+===================== */
 
 type BundleItem = {
-  quantity: number;
-  variant_id: string;
-};
+  variant_id: string
+  quantity: number
+}
 
 type Bundle = {
-  id: string;
-  name: string;
-  created_at: string;
-  delivery_day: number; // 1–28 (monthly delivery day)
-  items: BundleItem[];
-};
+  id: string
+  name: string
+  created_at: string
+  delivery_day: number // monthly day (1–28)
+  items: BundleItem[]
+}
 
-/* ---------- HELPERS ---------- */
+/* =====================
+   Helpers
+===================== */
 
 const formatMoney = (amount: number) =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-  }).format(amount);
+  }).format(amount)
 
-const getNextDeliveryDate = (deliveryDay: number) => {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth();
+const getNextDeliveryDate = (deliveryDay: number): Date => {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = today.getMonth()
 
-  const candidate = new Date(year, month, deliveryDay);
+  const daysInMonth = (y: number, m: number) =>
+    new Date(y, m + 1, 0).getDate()
 
-  // If delivery day already passed this month → next month
+  let day = Math.min(deliveryDay, daysInMonth(year, month))
+  let candidate = new Date(year, month, day)
+
   if (candidate < today) {
-    return new Date(year, month + 1, deliveryDay);
+    const nextMonth = month + 1
+    const nextYear = nextMonth > 11 ? year + 1 : year
+    const normalizedMonth = nextMonth % 12
+
+    day = Math.min(
+      deliveryDay,
+      daysInMonth(nextYear, normalizedMonth)
+    )
+
+    candidate = new Date(nextYear, normalizedMonth, day)
   }
 
-  return candidate;
-};
+  return candidate
+}
 
-/* ---------- COMPONENT ---------- */
+/* =====================
+   Component
+===================== */
 
 export default function MyBundlesPage() {
-  const [bundles, setBundles] = useState<Bundle[]>([]);
-  const [bundleTotals, setBundleTotals] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(true);
+  const [bundles, setBundles] = useState<Bundle[]>([])
+  const [bundleTotals, setBundleTotals] = useState<Record<string, number>>({})
+  const [loading, setLoading] = useState(true)
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editBundle, setEditBundle] = useState<Bundle | null>(null);
-  const [busyId, setBusyId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingBundle, setEditingBundle] = useState<Bundle | null>(null)
+  const [busyBundleId, setBusyBundleId] = useState<string | null>(null)
 
-  /* ---------- LOAD ---------- */
+  /* =====================
+     Load Bundles
+  ===================== */
 
   useEffect(() => {
-    loadBundles();
-  }, []);
+    loadBundles()
+  }, [])
 
   const loadBundles = async () => {
-    setLoading(true);
+    setLoading(true)
+
     try {
-      const result = await getSavedBundlesAction();
-      if (!result.success || !Array.isArray(result.bundles)) {
-        setBundles([]);
-        return;
+      const res = await getSavedBundlesAction()
+
+      if (!res.success || !Array.isArray(res.bundles)) {
+        setBundles([])
+        return
       }
 
-      setBundles(result.bundles);
-      calculateTotals(result.bundles);
+      setBundles(res.bundles)
+      calculateTotals(res.bundles)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  /* ---------- TOTALS ---------- */
+  /* =====================
+     Calculate Totals
+  ===================== */
 
   const calculateTotals = async (bundles: Bundle[]) => {
     try {
       const { products } = await sdk.store.product.list({
         limit: 300,
         fields: "id,variants.id,variants.calculated_price",
-      });
+      })
 
-      const totals: Record<string, number> = {};
+      const totals: Record<string, number> = {}
 
-      bundles.forEach((bundle) => {
+      for (const bundle of bundles) {
         totals[bundle.id] = bundle.items.reduce((sum, item) => {
           const product = products.find((p) =>
             p.variants?.some((v) => v.id === item.variant_id)
-          );
+          )
 
           const variant = product?.variants?.find(
             (v) => v.id === item.variant_id
-          );
+          )
 
           const price =
-            variant?.calculated_price?.calculated_amount ?? 0;
+            variant?.calculated_price?.calculated_amount ?? 0
 
-          return sum + price * item.quantity;
-        }, 0);
-      });
+          return sum + price * item.quantity
+        }, 0)
+      }
 
-      setBundleTotals(totals);
+      setBundleTotals(totals)
     } catch {
-      // intentionally silent — totals are non-critical UI
+      // Totals are non-blocking UI data
     }
-  };
+  }
 
-  /* ---------- ACTIONS ---------- */
+  /* =====================
+     Actions
+  ===================== */
 
-  const addToCart = async (bundle: Bundle) => {
-    setBusyId(bundle.id);
+  const handleAddToCart = async (bundle: Bundle) => {
+    setBusyBundleId(bundle.id)
+
     try {
-      const res = await addBundleToCartAction(bundle.items);
-      if (res.success) window.location.href = "/cart";
+      const res = await addBundleToCartAction(bundle.items)
+      if (res.success) window.location.href = "/cart"
     } finally {
-      setBusyId(null);
+      setBusyBundleId(null)
     }
-  };
+  }
 
-  const deleteBundle = async (id: string) => {
-    if (!confirm("Delete this bundle?")) return;
-    setBusyId(id);
+  const handleDeleteBundle = async (bundleId: string) => {
+    if (!confirm("Delete this bundle?")) return
+
+    setBusyBundleId(bundleId)
+
     try {
-      await deleteBundleAction(id);
-      await loadBundles();
+      await deleteBundleAction(bundleId)
+      await loadBundles()
     } finally {
-      setBusyId(null);
+      setBusyBundleId(null)
     }
-  };
+  }
 
-  /* ---------- UI ---------- */
+  /* =====================
+     UI
+  ===================== */
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-10">
@@ -164,8 +195,8 @@ export default function MyBundlesPage() {
 
           <button
             onClick={() => {
-              setEditBundle(null);
-              setIsModalOpen(true);
+              setEditingBundle(null)
+              setIsModalOpen(true)
             }}
             className="inline-flex items-center gap-2 rounded-lg bg-black px-5 py-2.5 text-base font-medium text-white hover:bg-gray-800"
           >
@@ -177,7 +208,7 @@ export default function MyBundlesPage() {
         {/* Loading */}
         {loading && (
           <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
+            {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
                 className="h-32 animate-pulse rounded-xl bg-white"
@@ -189,7 +220,7 @@ export default function MyBundlesPage() {
         {/* Empty */}
         {!loading && bundles.length === 0 && (
           <div className="rounded-xl bg-white p-16 text-center">
-            <Package className="mx-auto mb-4 text-gray-300" size={52} />
+            <Package size={52} className="mx-auto mb-4 text-gray-300" />
             <p className="font-medium text-gray-700">
               No bundles created yet
             </p>
@@ -202,9 +233,7 @@ export default function MyBundlesPage() {
         {/* Bundles */}
         {!loading &&
           bundles.map((bundle) => {
-            const nextDelivery = getNextDeliveryDate(
-              bundle.delivery_day
-            );
+            const nextDelivery = getNextDeliveryDate(bundle.delivery_day)
 
             return (
               <div
@@ -245,11 +274,11 @@ export default function MyBundlesPage() {
                   {/* Actions */}
                   <div className="flex gap-2">
                     <button
-                      onClick={() => addToCart(bundle)}
-                      disabled={busyId === bundle.id}
+                      onClick={() => handleAddToCart(bundle)}
+                      disabled={busyBundleId === bundle.id}
                       className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
                     >
-                      {busyId === bundle.id ? (
+                      {busyBundleId === bundle.id ? (
                         <Loader2 size={16} className="animate-spin" />
                       ) : (
                         <ShoppingCart size={16} />
@@ -259,8 +288,8 @@ export default function MyBundlesPage() {
 
                     <button
                       onClick={() => {
-                        setEditBundle(bundle);
-                        setIsModalOpen(true);
+                        setEditingBundle(bundle)
+                        setIsModalOpen(true)
                       }}
                       className="inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
                     >
@@ -269,8 +298,8 @@ export default function MyBundlesPage() {
                     </button>
 
                     <button
-                      onClick={() => deleteBundle(bundle.id)}
-                      disabled={busyId === bundle.id}
+                      onClick={() => handleDeleteBundle(bundle.id)}
+                      disabled={busyBundleId === bundle.id}
                       className="inline-flex items-center gap-1.5 rounded-md bg-red-50 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-100 disabled:opacity-50"
                     >
                       <Trash2 size={16} />
@@ -278,20 +307,20 @@ export default function MyBundlesPage() {
                   </div>
                 </div>
               </div>
-            );
+            )
           })}
 
         {/* Modal */}
         <CreateBundleModal
           isOpen={isModalOpen}
-          bundle={editBundle}
+          bundle={editingBundle}
           onClose={() => {
-            setIsModalOpen(false);
-            setEditBundle(null);
-            loadBundles();
+            setIsModalOpen(false)
+            setEditingBundle(null)
+            loadBundles()
           }}
         />
       </div>
     </div>
-  );
+  )
 }
