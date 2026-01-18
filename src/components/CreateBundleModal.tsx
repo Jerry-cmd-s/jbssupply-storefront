@@ -358,20 +358,20 @@ export default function CreateBundleModal({
                   </option>
                 ))}
               </select>
-              
-              <label className="block text-sm font-semibold">
-               Pick the date your deliveries should begin
-              </label>
 
- <div className="mb-4 space-y-3">
-              
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full rounded-xl border px-4 py-3 bg-white"
-              />
-            </div>
+  <div className="mb-4 space-y-3">
+  <label className="block text-sm font-medium text-gray-700">
+    Pick the date your deliveries should begin
+  </label>
+
+  <input
+    type="date"
+    value={startDate}
+    onChange={(e) => setStartDate(e.target.value)}
+    className="w-full rounded-xl border px-4 py-3 bg-white"
+  />
+</div>
+
 
             {/* Selected Items */}
             <div className="space-y-3">
