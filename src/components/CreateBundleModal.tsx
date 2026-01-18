@@ -359,7 +359,7 @@ export default function CreateBundleModal({
                 ))}
               </select>
 
-  <div className="mb-4 space-y-3">
+ <div className="mb-4 space-y-3">
   <label className="block text-sm font-medium text-gray-700">
     Pick the date your deliveries should begin
   </label>
@@ -371,6 +371,7 @@ export default function CreateBundleModal({
     className="w-full rounded-xl border px-4 py-3 bg-white"
   />
 </div>
+
 
 
             {/* Selected Items */}
