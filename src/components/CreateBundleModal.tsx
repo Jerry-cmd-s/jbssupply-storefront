@@ -359,6 +359,10 @@ export default function CreateBundleModal({
                 ))}
               </select>
 
+ <div className="mb-4 space-y-3">
+              <label className="block text-sm font-semibold">
+                Select your start date for delivery
+              </label>
               <input
                 type="date"
                 value={startDate}
