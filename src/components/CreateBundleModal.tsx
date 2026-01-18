@@ -361,7 +361,7 @@ export default function CreateBundleModal({
 
  <div className="mb-4 space-y-3">
               <label className="block text-sm font-semibold">
-                Select your start date for delivery
+               Pick the date your deliveries should begin
               </label>
               <input
                 type="date"
