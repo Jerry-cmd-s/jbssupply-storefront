@@ -65,8 +65,8 @@ export default function PrivacyPolicyPage() {
           <ul className="list-disc list-inside text-gray-700">
             <li>
               Phone:{" "}
-              <a href="tel:+17722037106" className="text-blue-600 underline">
-                +1 (772) 203-7106
+              <a href="tel:+1754-333-0960" className="text-blue-600 underline">
+                +1 754-333-0960
               </a>
             </li>
             <li>
@@ -138,8 +138,8 @@ export default function PrivacyPolicyPage() {
               jerrycamijb@outlook.com
             </a>{" "}
             or by phone at{" "}
-            <a href="tel:+17722037106" className="text-blue-600 underline">
-              +1 (772) 203-7106
+            <a href="tel:+1754-333-0960" className="text-blue-600 underline">
+              +1 754-333-0960
             </a>.
           </p>
         </section>
